@@ -1,0 +1,2490 @@
+Microsoft (R) Macro Assembler Version 14.29.30146.0	    12/07/22 10:58:09
+Libray Management Syste				     Page 1 - 1
+
+
+				Title Libray Management System
+				include irvine32.inc
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C ;OPTION CASEMAP:NONE		; optional: make identifiers case-sensitive
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C INCLUDE VirtualKeys.inc
+			      C ; VirtualKeys.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+				include Macros.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+ = 000001F5			BUFFER_SIZE = 501
+
+				;-----------.Data-----------------
+
+ 00000000			.data
+
+ 00000000 00000000			choice dword ?
+ 00000004 44 69 61 6C 6F		caption db "Dialog Title", 0
+	   67 20 54 69 74
+	   6C 65 00
+ 00000011 57 65 6C 63 6F		HelloMsg BYTE "Welcome to Library Management System", 0
+	   6D 65 20 74 6F
+	   20 4C 69 62 72
+	   61 72 79 20 4D
+	   61 6E 61 67 65
+	   6D 65 6E 74 20
+	   53 79 73 74 65
+	   6D 00
+ 00000036  000001F5 [			adminstudentName byte BUFFER_SIZE DUP(0)
+	    00
+	   ]
+ 0000022B 00000000			adminPassword dword ?
+ 0000022F  000001F5 [			bookName BYTE BUFFER_SIZE DUP(0)
+	    00
+	   ]
+ 00000424  000001F5 [			studentName BYTE BUFFER_SIZE DUP(0)
+	    00
+	   ]
+ 00000619  000001F5 [			authorName BYTE BUFFER_SIZE DUP(0)
+	    00
+	   ]
+ 0000080E  000001F5 [			getString BYTE BUFFER_SIZE DUP(0)
+	    00
+	   ]
+ 00000A03 20 20 20 20 20		space BYTE "     ",0
+	   00
+ 00000A09 20 00				del byte " ",0
+ 00000A0B 00000000			fileHandle Handle ?
+ 00000A0F  00000001 [			WriteToFile_1 DWORD 1 DUP(0)
+	    00000000
+	   ]
+ 00000A13  00000001 [			ReadFromFile_1 DWORD 1 DUP(0)
+	    00000000
+	   ]
+ 00000A17 00000000			stringLength DWORD ?
+ 00000A1B 00000000			stringLength_1 DWORD ?
+ 00000A1F 43 6F 6E 74 65		fileName byte "Content.txt",0
+	   6E 74 2E 74 78
+	   74 00
+ 00000A2B 00000000			hello dword ?
+
+				;------------.Data------------------
+
+				;------------.Code------------------
+
+ 00000000			.code
+
+				seeContent proto, var:dword
+
+ 00000000			addBook proc
+ 00000000  E8 00000000 E		call clrscr
+ 00000005  B6 05			mov dh, 5
+ 00000007  B2 1E			mov dl, 30
+ 00000009  E8 00000000 E		call gotoxy
+					mwrite "Enter Book Information Below"
+ 00000A2F		     1		.data		
+ 00000A2F 45 6E 74 65 72     1		??0000 BYTE "Enter Book Information Below",0	
+	   20 42 6F 6F 6B
+	   20 49 6E 66 6F
+	   72 6D 61 74 69
+	   6F 6E 20 42 65
+	   6C 6F 77 00
+ 0000000E		     1		.code
+ 0000000E  52		     1		push	edx
+ 0000000F  BA 00000A2F R     1		mov	edx,OFFSET ??0000
+ 00000014  E8 00000000 E     1		call	WriteString
+ 00000019  5A		     1		pop	edx
+ 0000001A  B6 07			mov dh, 7
+ 0000001C  B2 23			mov dl, 35
+ 0000001E  E8 00000000 E		call gotoxy
+					mwrite "Enter Name: "
+ 00000A4C		     1		.data		
+ 00000A4C 45 6E 74 65 72     1		??0001 BYTE "Enter Name: ",0	
+	   20 4E 61 6D 65
+	   3A 20 00
+ 00000023		     1		.code
+ 00000023  52		     1		push	edx
+ 00000024  BA 00000A4C R     1		mov	edx,OFFSET ??0001
+ 00000029  E8 00000000 E     1		call	WriteString
+ 0000002E  5A		     1		pop	edx
+ 0000002F  BA 0000022F R		mov edx, offset bookName
+ 00000034  B9 000001F5			mov ecx, BUFFER_SIZE
+ 00000039  E8 00000000 E		call readstring
+ 0000003E  A3 00000A17 R		mov stringLength, eax
+ 00000043  E8 00000911			call CreateOutptFle
+					.if eax != 0
+ 00000050  E8 00000A66				call WriteFle
+						
+						INVOKE CreateFile, addr fileName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+ 00000071  A3 00000A0B R			mov filehandle, eax
+						INVOKE closehandle, filehandle
+
+						INVOKE CreateFile, addr fileName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 0000009D  A3 00000A0B R			mov filehandle, eax
+						INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+						INVOKE WriteFile, filehandle, addr bookName, stringLength, ADDR WriteToFile_1, 0
+						INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+						INVOKE CloseHandle, filehandle
+ 000000F4  B6 08				mov dh, 8
+ 000000F6  B2 23				mov dl, 35
+ 000000F8  E8 00000000 E			call gotoxy
+						mwrite "Enter Author Name: "
+ 00000A59		     1		.data		
+ 00000A59 45 6E 74 65 72     1		??0002 BYTE "Enter Author Name: ",0	
+	   20 41 75 74 68
+	   6F 72 20 4E 61
+	   6D 65 3A 20 00
+ 000000FD		     1		.code
+ 000000FD  52		     1		push	edx
+ 000000FE  BA 00000A59 R     1		mov	edx,OFFSET ??0002
+ 00000103  E8 00000000 E     1		call	WriteString
+ 00000108  5A		     1		pop	edx
+ 00000109  BA 00000619 R			mov edx, offset authorName
+ 0000010E  B9 000001F5				mov ecx, BUFFER_SIZE
+ 00000113  E8 00000000 E			call readstring
+ 00000118  A3 00000A17 R			mov stringLength, eax
+ 0000011D  E8 00000925				call WriteTwoFle
+ 00000122  B6 09				mov dh, 9
+ 00000124  B2 23				mov dl, 35
+ 00000126  E8 00000000 E			call gotoxy
+						mwrite "Enter Quantity: "
+
+ 00000A6D		     1		.data		
+ 00000A6D 45 6E 74 65 72     1		??0003 BYTE "Enter Quantity: ",0	
+	   20 51 75 61 6E
+	   74 69 74 79 3A
+	   20 00
+ 0000012B		     1		.code
+ 0000012B  52		     1		push	edx
+ 0000012C  BA 00000A6D R     1		mov	edx,OFFSET ??0003
+ 00000131  E8 00000000 E     1		call	WriteString
+ 00000136  5A		     1		pop	edx
+ 00000137  BA 00000619 R			mov edx, offset authorName
+ 0000013C  B9 000001F5				mov ecx, BUFFER_SIZE
+ 00000141  E8 00000000 E			call readstring
+ 00000146  A3 00000A17 R			mov stringLength, eax
+ 0000014B  E8 000008F7				call WriteTwoFle
+ 00000150  B6 0B				mov dh, 11
+ 00000152  B2 1E				mov dl, 30
+ 00000154  E8 00000000 E			call gotoxy
+						mwrite "Book Added Successfully"
+ 00000A7E		     1		.data		
+ 00000A7E 42 6F 6F 6B 20     1		??0004 BYTE "Book Added Successfully",0	
+	   41 64 64 65 64
+	   20 53 75 63 63
+	   65 73 73 66 75
+	   6C 6C 79 00
+ 00000159		     1		.code
+ 00000159  52		     1		push	edx
+ 0000015A  BA 00000A7E R     1		mov	edx,OFFSET ??0004
+ 0000015F  E8 00000000 E     1		call	WriteString
+ 00000164  5A		     1		pop	edx
+ 00000165  B8 000007D0				mov eax, 2000
+ 0000016A  E8 00000000 E			call delay
+ 0000016F  E8 00000F63				call admin
+					.else
+ 00000179  E8 00000BF5				call ReadFrmFle
+						.if getString == " "
+ 0000018B  E8 00000B6F					call WriteDelUpdFile
+ 00000190  B6 08					mov dh, 8
+ 00000192  B2 23					mov dl, 35
+ 00000194  E8 00000000 E				call gotoxy
+							mwrite "Enter Author Name: "
+ 00000A96		     1		.data		
+ 00000A96 45 6E 74 65 72     1		??0005 BYTE "Enter Author Name: ",0	
+	   20 41 75 74 68
+	   6F 72 20 4E 61
+	   6D 65 3A 20 00
+ 00000199		     1		.code
+ 00000199  52		     1		push	edx
+ 0000019A  BA 00000A96 R     1		mov	edx,OFFSET ??0005
+ 0000019F  E8 00000000 E     1		call	WriteString
+ 000001A4  5A		     1		pop	edx
+ 000001A5  BA 00000619 R				mov edx, offset authorName
+ 000001AA  B9 000001F5					mov ecx, BUFFER_SIZE
+ 000001AF  E8 00000000 E				call readstring
+ 000001B4  A3 00000A17 R				mov stringLength, eax
+ 000001B9  E8 00000889					call WriteTwoFle
+ 000001BE  B6 09					mov dh, 9
+ 000001C0  B2 23					mov dl, 35
+ 000001C2  E8 00000000 E				call gotoxy
+							mwrite "Enter Quantity: "
+ 00000AAA		     1		.data		
+ 00000AAA 45 6E 74 65 72     1		??0006 BYTE "Enter Quantity: ",0	
+	   20 51 75 61 6E
+	   74 69 74 79 3A
+	   20 00
+ 000001C7		     1		.code
+ 000001C7  52		     1		push	edx
+ 000001C8  BA 00000AAA R     1		mov	edx,OFFSET ??0006
+ 000001CD  E8 00000000 E     1		call	WriteString
+ 000001D2  5A		     1		pop	edx
+ 000001D3  BA 00000619 R				mov edx, offset authorName
+ 000001D8  B9 000001F5					mov ecx, BUFFER_SIZE
+ 000001DD  E8 00000000 E				call readstring
+ 000001E2  A3 00000A17 R				mov stringLength, eax
+ 000001E7  E8 0000085B					call WriteTwoFle
+ 000001EC  B6 0B					mov dh, 11
+ 000001EE  B2 1E					mov dl, 30
+ 000001F0  E8 00000000 E				call gotoxy
+							mwrite "Book Added Successfully"
+ 00000ABB		     1		.data		
+ 00000ABB 42 6F 6F 6B 20     1		??0007 BYTE "Book Added Successfully",0	
+	   41 64 64 65 64
+	   20 53 75 63 63
+	   65 73 73 66 75
+	   6C 6C 79 00
+ 000001F5		     1		.code
+ 000001F5  52		     1		push	edx
+ 000001F6  BA 00000ABB R     1		mov	edx,OFFSET ??0007
+ 000001FB  E8 00000000 E     1		call	WriteString
+ 00000200  5A		     1		pop	edx
+ 00000201  B8 000007D0					mov eax, 2000
+ 00000206  E8 00000000 E				call delay
+ 0000020B  E8 00000EC7					call admin
+						.else
+ 00000212  B6 09					mov dh, 9
+ 00000214  B2 1E					mov dl, 30
+ 00000216  E8 00000000 E				call gotoxy
+							mwrite "Book Already Added into Library"
+ 00000AD3		     1		.data		
+ 00000AD3 42 6F 6F 6B 20     1		??0008 BYTE "Book Already Added into Library",0	
+	   41 6C 72 65 61
+	   64 79 20 41 64
+	   64 65 64 20 69
+	   6E 74 6F 20 4C
+	   69 62 72 61 72
+	   79 00
+ 0000021B		     1		.code
+ 0000021B  52		     1		push	edx
+ 0000021C  BA 00000AD3 R     1		mov	edx,OFFSET ??0008
+ 00000221  E8 00000000 E     1		call	WriteString
+ 00000226  5A		     1		pop	edx
+ 00000227  B8 000007D0					mov eax, 2000
+ 0000022C  E8 00000000 E				call delay
+ 00000231  E8 00000EA1					call admin
+						.endif
+					.endif	
+ 00000236  C3				ret
+ 00000237			addBook endp
+
+ 00000237			SearchBook proc
+ 00000237  E8 00000000 E		call clrscr
+ 0000023C  B6 05			mov dh, 5
+ 0000023E  B2 1E			mov dl, 30
+ 00000240  E8 00000000 E		call gotoxy
+					mwrite "Search Book"
+ 00000AF3		     1		.data		
+ 00000AF3 53 65 61 72 63     1		??0009 BYTE "Search Book",0	
+	   68 20 42 6F 6F
+	   6B 00
+ 00000245		     1		.code
+ 00000245  52		     1		push	edx
+ 00000246  BA 00000AF3 R     1		mov	edx,OFFSET ??0009
+ 0000024B  E8 00000000 E     1		call	WriteString
+ 00000250  5A		     1		pop	edx
+ 00000251  B6 07			mov dh, 7
+ 00000253  B2 23			mov dl, 35
+ 00000255  E8 00000000 E		call gotoxy
+					mWrite "Enter Book Name: "
+ 00000AFF		     1		.data		
+ 00000AFF 45 6E 74 65 72     1		??000A BYTE "Enter Book Name: ",0	
+	   20 42 6F 6F 6B
+	   20 4E 61 6D 65
+	   3A 20 00
+ 0000025A		     1		.code
+ 0000025A  52		     1		push	edx
+ 0000025B  BA 00000AFF R     1		mov	edx,OFFSET ??000A
+ 00000260  E8 00000000 E     1		call	WriteString
+ 00000265  5A		     1		pop	edx
+ 00000266  BA 0000022F R		mov edx, OFFSET bookName
+ 0000026B  B9 000001F5			mov ecx, BUFFER_SIZE
+ 00000270  E8 00000000 E		call ReadString
+ 00000275  E8 00000AF9			call ReadFrmFle
+					.if eax == 0
+ 0000027E  B6 09				mov dh, 9
+ 00000280  B2 1E				mov dl, 30
+ 00000282  E8 00000000 E			call gotoxy
+						mwrite "Searched Book Not Available in Library"
+ 00000B11		     1		.data		
+ 00000B11 53 65 61 72 63     1		??000B BYTE "Searched Book Not Available in Library",0	
+	   68 65 64 20 42
+	   6F 6F 6B 20 4E
+	   6F 74 20 41 76
+	   61 69 6C 61 62
+	   6C 65 20 69 6E
+	   20 4C 69 62 72
+	   61 72 79 00
+ 00000287		     1		.code
+ 00000287  52		     1		push	edx
+ 00000288  BA 00000B11 R     1		mov	edx,OFFSET ??000B
+ 0000028D  E8 00000000 E     1		call	WriteString
+ 00000292  5A		     1		pop	edx
+ 00000293  B8 000007D0				mov eax, 2000
+ 00000298  E8 00000000 E			call delay
+ 0000029D  E8 00000E35				call admin
+					.else
+						.if getString == " "
+ 000002AD  B6 09					mov dh, 9
+ 000002AF  B2 1E					mov dl, 30
+ 000002B1  E8 00000000 E				call gotoxy
+							mwrite "Searched Book Not Available in Library"
+ 00000B38		     1		.data		
+ 00000B38 53 65 61 72 63     1		??000C BYTE "Searched Book Not Available in Library",0	
+	   68 65 64 20 42
+	   6F 6F 6B 20 4E
+	   6F 74 20 41 76
+	   61 69 6C 61 62
+	   6C 65 20 69 6E
+	   20 4C 69 62 72
+	   61 72 79 00
+ 000002B6		     1		.code
+ 000002B6  52		     1		push	edx
+ 000002B7  BA 00000B38 R     1		mov	edx,OFFSET ??000C
+ 000002BC  E8 00000000 E     1		call	WriteString
+ 000002C1  5A		     1		pop	edx
+ 000002C2  B8 000007D0					mov eax, 2000
+ 000002C7  E8 00000000 E				call delay
+ 000002CC  E8 00000E06					call admin
+						.else
+ 000002D3  B6 09					mov dh, 9
+ 000002D5  B2 1E					mov dl, 30
+ 000002D7  E8 00000000 E				call gotoxy
+							mwrite "Searched Book Information Below"
+ 00000B5F		     1		.data		
+ 00000B5F 53 65 61 72 63     1		??000D BYTE "Searched Book Information Below",0	
+	   68 65 64 20 42
+	   6F 6F 6B 20 49
+	   6E 66 6F 72 6D
+	   61 74 69 6F 6E
+	   20 42 65 6C 6F
+	   77 00
+ 000002DC		     1		.code
+ 000002DC  52		     1		push	edx
+ 000002DD  BA 00000B5F R     1		mov	edx,OFFSET ??000D
+ 000002E2  E8 00000000 E     1		call	WriteString
+ 000002E7  5A		     1		pop	edx
+ 000002E8  B6 0B					mov dh, 11
+ 000002EA  B2 23					mov dl, 35
+ 000002EC  E8 00000000 E				call gotoxy
+							mwrite "BookName     AuthorName     Quantity"
+ 00000B7F		     1		.data		
+ 00000B7F 42 6F 6F 6B 4E     1		??000E BYTE "BookName     AuthorName     Quantity",0	
+	   61 6D 65 20 20
+	   20 20 20 41 75
+	   74 68 6F 72 4E
+	   61 6D 65 20 20
+	   20 20 20 51 75
+	   61 6E 74 69 74
+	   79 00
+ 000002F1		     1		.code
+ 000002F1  52		     1		push	edx
+ 000002F2  BA 00000B7F R     1		mov	edx,OFFSET ??000E
+ 000002F7  E8 00000000 E     1		call	WriteString
+ 000002FC  5A		     1		pop	edx
+ 000002FD  B6 0D					mov dh, 13
+ 000002FF  B2 23					mov dl, 35
+ 00000301  E8 00000000 E				call gotoxy
+ 00000306  BA 0000080E R				mov edx, OFFSET getString
+ 0000030B  E8 00000000 E				call WriteString
+ 00000310  B8 00000BB8					mov eax, 3000
+ 00000315  E8 00000000 E				call delay
+ 0000031A  E8 00000DB8					call admin
+						.endif
+					.endif
+ 0000031F  C3				ret
+ 00000320			SearchBook endp
+
+ 00000320			seeContent proc, var:dword
+ 00000323  E8 00000000 E		call clrscr
+ 00000328  E8 00000A9A			call ReadFle
+					.if eax == 0
+ 00000331  B6 05				mov dh, 5
+ 00000333  B2 1E				mov dl, 30
+ 00000335  E8 00000000 E			call gotoxy
+						mwrite "There is no Book in Library"
+ 00000BA4		     1		.data		
+ 00000BA4 54 68 65 72 65     1		??000F BYTE "There is no Book in Library",0	
+	   20 69 73 20 6E
+	   6F 20 42 6F 6F
+	   6B 20 69 6E 20
+	   4C 69 62 72 61
+	   72 79 00
+ 0000033A		     1		.code
+ 0000033A  52		     1		push	edx
+ 0000033B  BA 00000BA4 R     1		mov	edx,OFFSET ??000F
+ 00000340  E8 00000000 E     1		call	WriteString
+ 00000345  5A		     1		pop	edx
+ 00000346  B8 000007D0				mov eax, 2000
+ 0000034B  E8 00000000 E			call delay
+						.if choice == 7
+ 00000359  E8 00000D79					call admin
+						.else
+ 00000360  E8 00000F25					call user
+						.endif
+					.else
+ 00000367  B6 05				mov dh, 5
+ 00000369  B2 1E				mov dl, 30
+ 0000036B  E8 00000000 E			call gotoxy
+						mwrite "Available Books in Library"
+ 00000BC0		     1		.data		
+ 00000BC0 41 76 61 69 6C     1		??0010 BYTE "Available Books in Library",0	
+	   61 62 6C 65 20
+	   42 6F 6F 6B 73
+	   20 69 6E 20 4C
+	   69 62 72 61 72
+	   79 00
+ 00000370		     1		.code
+ 00000370  52		     1		push	edx
+ 00000371  BA 00000BC0 R     1		mov	edx,OFFSET ??0010
+ 00000376  E8 00000000 E     1		call	WriteString
+ 0000037B  5A		     1		pop	edx
+ 0000037C  B6 07				mov dh, 7
+ 0000037E  B2 1E				mov dl, 30
+ 00000380  E8 00000000 E			call gotoxy
+ 00000385  BA 0000080E R			mov edx, OFFSET getString
+ 0000038A  E8 00000000 E			call WriteString
+ 0000038F  B8 00000BB8				mov eax, 3000
+ 00000394  E8 00000000 E			call delay
+						.if choice == 7
+ 000003A2  E8 00000D30					call admin
+						.else
+ 000003A9  E8 00000EDC					call user
+						.endif
+					.endif
+					ret
+ 000003B2			seeContent endp
+Project.asm(219) : warning A6004:procedure argument or local not referenced : var
+
+ 000003B2			seeContentBorrowBook proc
+ 000003B2  E8 00000A10			call ReadFle
+					.if eax == 0
+ 000003BB  B6 0B				mov dh, 11
+ 000003BD  B2 1E				mov dl, 30
+ 000003BF  E8 00000000 E			call gotoxy
+						mwrite "There is no Book in Library"
+ 00000BDB		     1		.data		
+ 00000BDB 54 68 65 72 65     1		??0011 BYTE "There is no Book in Library",0	
+	   20 69 73 20 6E
+	   6F 20 42 6F 6F
+	   6B 20 69 6E 20
+	   4C 69 62 72 61
+	   72 79 00
+ 000003C4		     1		.code
+ 000003C4  52		     1		push	edx
+ 000003C5  BA 00000BDB R     1		mov	edx,OFFSET ??0011
+ 000003CA  E8 00000000 E     1		call	WriteString
+ 000003CF  5A		     1		pop	edx
+ 000003D0  B6 0D				mov dh, 13
+ 000003D2  B2 1E				mov dl, 30
+ 000003D4  E8 00000000 E			call gotoxy
+						mwrite "First You Need to Add Book"
+ 00000BF7		     1		.data		
+ 00000BF7 46 69 72 73 74     1		??0012 BYTE "First You Need to Add Book",0	
+	   20 59 6F 75 20
+	   4E 65 65 64 20
+	   74 6F 20 41 64
+	   64 20 42 6F 6F
+	   6B 00
+ 000003D9		     1		.code
+ 000003D9  52		     1		push	edx
+ 000003DA  BA 00000BF7 R     1		mov	edx,OFFSET ??0012
+ 000003DF  E8 00000000 E     1		call	WriteString
+ 000003E4  5A		     1		pop	edx
+ 000003E5  B8 000007D0				mov eax, 2000
+ 000003EA  E8 00000000 E			call delay
+ 000003EF  E8 00000CE3				call admin
+					.else
+ 000003F6  B6 0C				mov dh, 12
+ 000003F8  B2 1E				mov dl, 30
+ 000003FA  E8 00000000 E			call gotoxy
+ 000003FF  B8 0000000F				mov eax, white
+ 00000404  E8 00000000 E			call SetTextColor
+						mwrite "Available Books in Library"
+ 00000C12		     1		.data		
+ 00000C12 41 76 61 69 6C     1		??0013 BYTE "Available Books in Library",0	
+	   61 62 6C 65 20
+	   42 6F 6F 6B 73
+	   20 69 6E 20 4C
+	   69 62 72 61 72
+	   79 00
+ 00000409		     1		.code
+ 00000409  52		     1		push	edx
+ 0000040A  BA 00000C12 R     1		mov	edx,OFFSET ??0013
+ 0000040F  E8 00000000 E     1		call	WriteString
+ 00000414  5A		     1		pop	edx
+ 00000415  B6 0D				mov dh, 13
+ 00000417  B2 1E				mov dl, 30
+ 00000419  E8 00000000 E			call gotoxy
+ 0000041E  BA 0000080E R			mov edx, OFFSET getString
+ 00000423  E8 00000000 E			call WriteString
+ 00000428  B8 00000BB8				mov eax, 3000
+ 0000042D  E8 00000000 E			call delay
+					.endif
+ 00000432  C3				ret
+ 00000433			seeContentBorrowBook endp
+
+ 00000433			borrowBook proc
+ 00000433  E8 00000000 E		call clrscr
+ 00000438  B6 05			mov dh, 5
+ 0000043A  B2 1E			mov dl, 30
+ 0000043C  E8 00000000 E		call gotoxy
+					mwrite "Borrow Book"
+ 00000C2D		     1		.data		
+ 00000C2D 42 6F 72 72 6F     1		??0014 BYTE "Borrow Book",0	
+	   77 20 42 6F 6F
+	   6B 00
+ 00000441		     1		.code
+ 00000441  52		     1		push	edx
+ 00000442  BA 00000C2D R     1		mov	edx,OFFSET ??0014
+ 00000447  E8 00000000 E     1		call	WriteString
+ 0000044C  5A		     1		pop	edx
+ 0000044D  B6 07			mov dh, 7
+ 0000044F  B2 23			mov dl, 35
+ 00000451  E8 00000000 E		call gotoxy
+					mwrite "Enter Student Name: "
+ 00000C39		     1		.data		
+ 00000C39 45 6E 74 65 72     1		??0015 BYTE "Enter Student Name: ",0	
+	   20 53 74 75 64
+	   65 6E 74 20 4E
+	   61 6D 65 3A 20
+	   00
+ 00000456		     1		.code
+ 00000456  52		     1		push	edx
+ 00000457  BA 00000C39 R     1		mov	edx,OFFSET ??0015
+ 0000045C  E8 00000000 E     1		call	WriteString
+ 00000461  5A		     1		pop	edx
+ 00000462  BA 00000424 R		mov edx, offset studentName
+ 00000467  B9 000001F5			mov ecx, BUFFER_SIZE
+ 0000046C  E8 00000000 E		call readstring
+ 00000471  A3 00000A1B R		mov stringLength_1, eax
+ 00000476  B6 08			mov dh, 8
+ 00000478  B2 23			mov dl, 35
+ 0000047A  E8 00000000 E		call gotoxy
+ 0000047F			p:	.if hello == 1
+ 00000488  B6 0F				mov dh, 15
+ 0000048A  B2 23				mov dl, 35
+ 0000048C  E8 00000000 E			call gotoxy
+					.endif
+ 00000491  B8 00000002			mov eax, green
+ 00000496  E8 00000000 E		call SetTextColor
+					mwrite "Enter Book Name: "
+ 00000C4E		     1		.data		
+ 00000C4E 45 6E 74 65 72     1		??0016 BYTE "Enter Book Name: ",0	
+	   20 42 6F 6F 6B
+	   20 4E 61 6D 65
+	   3A 20 00
+ 0000049B		     1		.code
+ 0000049B  52		     1		push	edx
+ 0000049C  BA 00000C4E R     1		mov	edx,OFFSET ??0016
+ 000004A1  E8 00000000 E     1		call	WriteString
+ 000004A6  5A		     1		pop	edx
+ 000004A7  BA 0000022F R		mov edx, offset bookName
+ 000004AC  B9 000001F5			mov ecx, BUFFER_SIZE
+ 000004B1  E8 00000000 E		call readstring
+ 000004B6  A3 00000A17 R		mov stringLength, eax
+ 000004BB  E8 000008B3			call ReadFrmFle
+					.if eax == 0
+ 000004C4  B6 0A				mov dh, 10
+ 000004C6  B2 1E				mov dl, 30
+ 000004C8  E8 00000000 E			call gotoxy
+						mwrite "Book Not Available in Library"
+ 00000C60		     1		.data		
+ 00000C60 42 6F 6F 6B 20     1		??0017 BYTE "Book Not Available in Library",0	
+	   4E 6F 74 20 41
+	   76 61 69 6C 61
+	   62 6C 65 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 00
+ 000004CD		     1		.code
+ 000004CD  52		     1		push	edx
+ 000004CE  BA 00000C60 R     1		mov	edx,OFFSET ??0017
+ 000004D3  E8 00000000 E     1		call	WriteString
+ 000004D8  5A		     1		pop	edx
+ 000004D9  B8 000007D0				mov eax, 2000
+ 000004DE  E8 00000000 E			call delay
+ 000004E3  E8 FFFFFECA				call seeContentBorrowBook
+ 000004E8  C7 05 00000A2B R			mov hello, 1
+	   00000001
+ 000004F2  B8 000003E8				mov eax, 1000
+ 000004F7  E8 00000000 E			call delay
+ 000004FC  EB 81				jmp p
+					.else
+						.if getString == " "
+ 0000050C  B6 0A					mov dh, 10
+ 0000050E  B2 1E					mov dl, 30
+ 00000510  E8 00000000 E				call gotoxy
+							mwrite "Book Not Available in Library"
+ 00000C7E		     1		.data		
+ 00000C7E 42 6F 6F 6B 20     1		??0018 BYTE "Book Not Available in Library",0	
+	   4E 6F 74 20 41
+	   76 61 69 6C 61
+	   62 6C 65 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 00
+ 00000515		     1		.code
+ 00000515  52		     1		push	edx
+ 00000516  BA 00000C7E R     1		mov	edx,OFFSET ??0018
+ 0000051B  E8 00000000 E     1		call	WriteString
+ 00000520  5A		     1		pop	edx
+ 00000521  B8 000007D0					mov eax, 2000
+ 00000526  E8 00000000 E				call delay
+ 0000052B  E8 FFFFFE82					call seeContentBorrowBook
+ 00000530  C7 05 00000A2B R				mov hello, 1
+	   00000001
+ 0000053A  B8 000003E8					mov eax, 1000
+ 0000053F  E8 00000000 E				call delay
+ 00000544  E9 FFFFFF36					jmp p
+						.else
+ 0000054B  E8 00000479					call CreateBorrowFile
+							.if eax != 0
+ 00000554  E8 000005D6						call WriteFleUser
+ 00000559  E8 000006B9						call WriteBorrowFle
+							.else
+ 00000560  E8 000008B6						call ReadStudentFile
+								.if getString == " "
+									;call CreateBorrowFile
+ 0000056E  E8 00000630							call WriteStudentFile
+ 00000573  E8 0000069F							call WriteBorrowFle
+								.else
+ 0000057A  B6 0A							mov dh, 10
+ 0000057C  B2 1E							mov dl, 30
+ 0000057E  E8 00000000 E						call gotoxy
+									mwrite "Student already Borrowed a Book"
+ 00000C9C		     1		.data		
+ 00000C9C 53 74 75 64 65     1		??0019 BYTE "Student already Borrowed a Book",0	
+	   6E 74 20 61 6C
+	   72 65 61 64 79
+	   20 42 6F 72 72
+	   6F 77 65 64 20
+	   61 20 42 6F 6F
+	   6B 00
+ 00000583		     1		.code
+ 00000583  52		     1		push	edx
+ 00000584  BA 00000C9C R     1		mov	edx,OFFSET ??0019
+ 00000589  E8 00000000 E     1		call	WriteString
+ 0000058E  5A		     1		pop	edx
+ 0000058F  B8 000007D0							mov eax, 2000
+ 00000594  E8 00000000 E						call delay
+ 00000599  E8 00000B39							call admin	
+								.endif
+							.endif
+						.endif
+					.endif
+					.if hello == 1
+ 000005A7  B6 10				mov dh, 16
+ 000005A9  B2 23				mov dl, 35
+ 000005AB  E8 00000000 E			call gotoxy
+					.else
+ 000005B2  B6 09				mov dh, 9
+ 000005B4  B2 23				mov dl, 35
+ 000005B6  E8 00000000 E			call gotoxy
+					.endif
+					mwrite "Enter Dept Name: "
+ 00000CBC		     1		.data		
+ 00000CBC 45 6E 74 65 72     1		??001A BYTE "Enter Dept Name: ",0	
+	   20 44 65 70 74
+	   20 4E 61 6D 65
+	   3A 20 00
+ 000005BB		     1		.code
+ 000005BB  52		     1		push	edx
+ 000005BC  BA 00000CBC R     1		mov	edx,OFFSET ??001A
+ 000005C1  E8 00000000 E     1		call	WriteString
+ 000005C6  5A		     1		pop	edx
+ 000005C7  BA 00000619 R		mov edx, offset authorName
+ 000005CC  B9 000001F5			mov ecx, BUFFER_SIZE
+ 000005D1  E8 00000000 E		call readstring
+ 000005D6  A3 00000A17 R		mov stringLength, eax
+ 000005DB  E8 000006AB			call WriteUserInfo
+					.if hello == 1
+ 000005E9  B6 11				mov dh, 17
+ 000005EB  B2 23				mov dl, 35
+ 000005ED  E8 00000000 E			call gotoxy
+					.else
+ 000005F4  B6 0A				mov dh, 10
+ 000005F6  B2 23				mov dl, 35
+ 000005F8  E8 00000000 E			call gotoxy
+					.endif
+					mwrite "Enter Reg No: "
+ 00000CCE		     1		.data		
+ 00000CCE 45 6E 74 65 72     1		??001B BYTE "Enter Reg No: ",0	
+	   20 52 65 67 20
+	   4E 6F 3A 20 00
+ 000005FD		     1		.code
+ 000005FD  52		     1		push	edx
+ 000005FE  BA 00000CCE R     1		mov	edx,OFFSET ??001B
+ 00000603  E8 00000000 E     1		call	WriteString
+ 00000608  5A		     1		pop	edx
+ 00000609  BA 00000619 R		mov edx, offset authorName
+ 0000060E  B9 000001F5			mov ecx, BUFFER_SIZE
+ 00000613  E8 00000000 E		call readstring
+ 00000618  A3 00000A17 R		mov stringLength, eax
+ 0000061D  E8 00000669			call WriteUserInfo
+					.if hello == 1
+ 0000062B  B6 13				mov dh, 19
+ 0000062D  B2 1E				mov dl, 30
+ 0000062F  E8 00000000 E			call gotoxy
+					.else
+ 00000636  B6 0C				mov dh, 12
+ 00000638  B2 1E				mov dl, 30
+ 0000063A  E8 00000000 E			call gotoxy
+					.endif
+					mwrite "Book Borrowed Successfully"
+ 00000CDD		     1		.data		
+ 00000CDD 42 6F 6F 6B 20     1		??001C BYTE "Book Borrowed Successfully",0	
+	   42 6F 72 72 6F
+	   77 65 64 20 53
+	   75 63 63 65 73
+	   73 66 75 6C 6C
+	   79 00
+ 0000063F		     1		.code
+ 0000063F  52		     1		push	edx
+ 00000640  BA 00000CDD R     1		mov	edx,OFFSET ??001C
+ 00000645  E8 00000000 E     1		call	WriteString
+ 0000064A  5A		     1		pop	edx
+ 0000064B  B8 000007D0			mov eax, 2000
+ 00000650  E8 00000000 E		call delay
+ 00000655  E8 00000A7D			call admin
+ 0000065A  C3				ret
+ 0000065B			borrowBook endp
+					
+ 0000065B			returnBook proc
+ 0000065B  E8 00000000 E		call clrscr
+ 00000660  B6 05			mov dh, 5
+ 00000662  B2 1E			mov dl, 30
+ 00000664  E8 00000000 E		call gotoxy
+					mwrite "Return Book"
+ 00000CF8		     1		.data		
+ 00000CF8 52 65 74 75 72     1		??001D BYTE "Return Book",0	
+	   6E 20 42 6F 6F
+	   6B 00
+ 00000669		     1		.code
+ 00000669  52		     1		push	edx
+ 0000066A  BA 00000CF8 R     1		mov	edx,OFFSET ??001D
+ 0000066F  E8 00000000 E     1		call	WriteString
+ 00000674  5A		     1		pop	edx
+ 00000675  B6 07			mov dh, 7
+ 00000677  B2 23			mov dl, 35
+ 00000679  E8 00000000 E		call gotoxy
+					mWrite "Enter Student Name: "
+ 00000D04		     1		.data		
+ 00000D04 45 6E 74 65 72     1		??001E BYTE "Enter Student Name: ",0	
+	   20 53 74 75 64
+	   65 6E 74 20 4E
+	   61 6D 65 3A 20
+	   00
+ 0000067E		     1		.code
+ 0000067E  52		     1		push	edx
+ 0000067F  BA 00000D04 R     1		mov	edx,OFFSET ??001E
+ 00000684  E8 00000000 E     1		call	WriteString
+ 00000689  5A		     1		pop	edx
+ 0000068A  BA 0000022F R		mov edx, OFFSET bookName
+ 0000068F  B9 000001F5			mov ecx, BUFFER_SIZE
+ 00000694  E8 00000000 E		call ReadString
+ 00000699  E8 000006D5			call ReadFrmFle
+					.if eax == 0
+ 000006A2  B6 09				mov dh, 9
+ 000006A4  B2 1E				mov dl, 30
+ 000006A6  E8 00000000 E			call gotoxy
+						mwrite "Student Not Found"
+ 00000D19		     1		.data		
+ 00000D19 53 74 75 64 65     1		??001F BYTE "Student Not Found",0	
+	   6E 74 20 4E 6F
+	   74 20 46 6F 75
+	   6E 64 00
+ 000006AB		     1		.code
+ 000006AB  52		     1		push	edx
+ 000006AC  BA 00000D19 R     1		mov	edx,OFFSET ??001F
+ 000006B1  E8 00000000 E     1		call	WriteString
+ 000006B6  5A		     1		pop	edx
+ 000006B7  B8 000007D0				mov eax, 2000
+ 000006BC  E8 00000000 E			call delay
+ 000006C1  E8 00000A11				call admin
+					.else
+						.if getString == " "
+ 000006D4  B6 09					mov dh, 9
+ 000006D6  B2 1E					mov dl, 30
+ 000006D8  E8 00000000 E				call gotoxy
+							mwrite "Book already Returned by Student"
+ 00000D2B		     1		.data		
+ 00000D2B 42 6F 6F 6B 20     1		??0020 BYTE "Book already Returned by Student",0	
+	   61 6C 72 65 61
+	   64 79 20 52 65
+	   74 75 72 6E 65
+	   64 20 62 79 20
+	   53 74 75 64 65
+	   6E 74 00
+ 000006DD		     1		.code
+ 000006DD  52		     1		push	edx
+ 000006DE  BA 00000D2B R     1		mov	edx,OFFSET ??0020
+ 000006E3  E8 00000000 E     1		call	WriteString
+ 000006E8  5A		     1		pop	edx
+ 000006E9  B8 000007D0					mov eax, 2000
+ 000006EE  E8 00000000 E				call delay
+ 000006F3  E8 000009DF					call admin
+						.else
+ 000006FA  B6 09					mov dh, 9
+ 000006FC  B2 1E					mov dl, 30
+ 000006FE  E8 00000000 E				call gotoxy
+							mwrite "Student Information Below"
+ 00000D4C		     1		.data		
+ 00000D4C 53 74 75 64 65     1		??0021 BYTE "Student Information Below",0	
+	   6E 74 20 49 6E
+	   66 6F 72 6D 61
+	   74 69 6F 6E 20
+	   42 65 6C 6F 77
+	   00
+ 00000703		     1		.code
+ 00000703  52		     1		push	edx
+ 00000704  BA 00000D4C R     1		mov	edx,OFFSET ??0021
+ 00000709  E8 00000000 E     1		call	WriteString
+ 0000070E  5A		     1		pop	edx
+ 0000070F  B6 0B					mov dh, 11
+ 00000711  B2 23					mov dl, 35
+ 00000713  E8 00000000 E				call gotoxy
+							mwrite "StudentName     BookName     DeptName     RegNo"
+ 00000D66		     1		.data		
+ 00000D66 53 74 75 64 65     1		??0022 BYTE "StudentName     BookName     DeptName     RegNo",0	
+	   6E 74 4E 61 6D
+	   65 20 20 20 20
+	   20 42 6F 6F 6B
+	   4E 61 6D 65 20
+	   20 20 20 20 44
+	   65 70 74 4E 61
+	   6D 65 20 20 20
+	   20 20 52 65 67
+	   4E 6F 00
+ 00000718		     1		.code
+ 00000718  52		     1		push	edx
+ 00000719  BA 00000D66 R     1		mov	edx,OFFSET ??0022
+ 0000071E  E8 00000000 E     1		call	WriteString
+ 00000723  5A		     1		pop	edx
+ 00000724  B6 0D					mov dh, 13
+ 00000726  B2 23					mov dl, 35
+ 00000728  E8 00000000 E				call gotoxy
+ 0000072D  BA 0000080E R				mov edx, OFFSET getString
+ 00000732  E8 00000000 E				call WriteString
+ 00000737  E8 000002C5					call DeleteFle
+ 0000073C  B6 0F					mov dh, 15
+ 0000073E  B2 1E					mov dl, 30
+ 00000740  E8 00000000 E				call gotoxy
+							mwrite "Book Returned Successfully"
+ 00000D96		     1		.data		
+ 00000D96 42 6F 6F 6B 20     1		??0023 BYTE "Book Returned Successfully",0	
+	   52 65 74 75 72
+	   6E 65 64 20 53
+	   75 63 63 65 73
+	   73 66 75 6C 6C
+	   79 00
+ 00000745		     1		.code
+ 00000745  52		     1		push	edx
+ 00000746  BA 00000D96 R     1		mov	edx,OFFSET ??0023
+ 0000074B  E8 00000000 E     1		call	WriteString
+ 00000750  5A		     1		pop	edx
+ 00000751  B8 00000BB8					mov eax, 3000
+ 00000756  E8 00000000 E				call delay
+ 0000075B  E8 00000977					call admin
+						.endif
+					.endif
+ 00000760  C3				ret
+ 00000761			returnBook endp
+
+ 00000761			deleteBook proc
+ 00000761  E8 00000000 E		call clrscr
+ 00000766  B6 05			mov dh, 5
+ 00000768  B2 1E			mov dl, 30
+ 0000076A  E8 00000000 E		call gotoxy
+					mwrite "Delete Book"
+ 00000DB1		     1		.data		
+ 00000DB1 44 65 6C 65 74     1		??0024 BYTE "Delete Book",0	
+	   65 20 42 6F 6F
+	   6B 00
+ 0000076F		     1		.code
+ 0000076F  52		     1		push	edx
+ 00000770  BA 00000DB1 R     1		mov	edx,OFFSET ??0024
+ 00000775  E8 00000000 E     1		call	WriteString
+ 0000077A  5A		     1		pop	edx
+ 0000077B  B6 07			mov dh, 7
+ 0000077D  B2 23			mov dl, 35
+ 0000077F  E8 00000000 E		call gotoxy
+					mWrite "Enter Book Name: "
+ 00000DBD		     1		.data		
+ 00000DBD 45 6E 74 65 72     1		??0025 BYTE "Enter Book Name: ",0	
+	   20 42 6F 6F 6B
+	   20 4E 61 6D 65
+	   3A 20 00
+ 00000784		     1		.code
+ 00000784  52		     1		push	edx
+ 00000785  BA 00000DBD R     1		mov	edx,OFFSET ??0025
+ 0000078A  E8 00000000 E     1		call	WriteString
+ 0000078F  5A		     1		pop	edx
+ 00000790  BA 0000022F R		mov edx, OFFSET bookName
+ 00000795  B9 000001F5			mov ecx, BUFFER_SIZE
+ 0000079A  E8 00000000 E		call ReadString
+ 0000079F  E8 000001ED			call CreateDelFile
+					.if eax == 0
+ 000007A8  B6 09				mov dh, 9
+ 000007AA  B2 1E				mov dl, 30
+ 000007AC  E8 00000000 E			call gotoxy
+						mwrite "Book Not Available in Library"
+ 00000DCF		     1		.data		
+ 00000DCF 42 6F 6F 6B 20     1		??0026 BYTE "Book Not Available in Library",0	
+	   4E 6F 74 20 41
+	   76 61 69 6C 61
+	   62 6C 65 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 00
+ 000007B1		     1		.code
+ 000007B1  52		     1		push	edx
+ 000007B2  BA 00000DCF R     1		mov	edx,OFFSET ??0026
+ 000007B7  E8 00000000 E     1		call	WriteString
+ 000007BC  5A		     1		pop	edx
+ 000007BD  B8 000007D0				mov eax, 2000
+ 000007C2  E8 00000000 E			call delay
+ 000007C7  E8 0000090B				call admin
+					.else
+ 000007CE  E8 000005A0				call ReadFrmFle
+						.if getString == " "
+ 000007DC  B6 09					mov dh, 9
+ 000007DE  B2 1E					mov dl, 30
+ 000007E0  E8 00000000 E				call gotoxy
+							mwrite "Book Not Available in Library"
+ 00000DED		     1		.data		
+ 00000DED 42 6F 6F 6B 20     1		??0027 BYTE "Book Not Available in Library",0	
+	   4E 6F 74 20 41
+	   76 61 69 6C 61
+	   62 6C 65 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 00
+ 000007E5		     1		.code
+ 000007E5  52		     1		push	edx
+ 000007E6  BA 00000DED R     1		mov	edx,OFFSET ??0027
+ 000007EB  E8 00000000 E     1		call	WriteString
+ 000007F0  5A		     1		pop	edx
+ 000007F1  B8 000007D0					mov eax, 2000
+ 000007F6  E8 00000000 E				call delay
+ 000007FB  E8 000008D7					call admin
+						.else
+ 00000802  E8 000001FA					call DeleteFle
+ 00000807  B6 09					mov dh, 9
+ 00000809  B2 1E					mov dl, 30
+ 0000080B  E8 00000000 E				call gotoxy
+							mwrite "Book is Removed from Library"
+ 00000E0B		     1		.data		
+ 00000E0B 42 6F 6F 6B 20     1		??0028 BYTE "Book is Removed from Library",0	
+	   69 73 20 52 65
+	   6D 6F 76 65 64
+	   20 66 72 6F 6D
+	   20 4C 69 62 72
+	   61 72 79 00
+ 00000810		     1		.code
+ 00000810  52		     1		push	edx
+ 00000811  BA 00000E0B R     1		mov	edx,OFFSET ??0028
+ 00000816  E8 00000000 E     1		call	WriteString
+ 0000081B  5A		     1		pop	edx
+ 0000081C  B8 000007D0					mov eax, 2000
+ 00000821  E8 00000000 E				call delay
+ 00000826  E8 000008AC					call admin
+						.endif
+					.endif
+ 0000082B  C3				ret
+ 0000082C			deleteBook endp
+
+ 0000082C			updateBookInfo proc
+ 0000082C  E8 00000000 E		call clrscr
+ 00000831  B6 05			mov dh, 5
+ 00000833  B2 1E			mov dl, 30
+ 00000835  E8 00000000 E		call gotoxy
+					mwrite "Update Book Info" 
+ 00000E28		     1		.data		
+ 00000E28 55 70 64 61 74     1		??0029 BYTE "Update Book Info",0	
+	   65 20 42 6F 6F
+	   6B 20 49 6E 66
+	   6F 00
+ 0000083A		     1		.code
+ 0000083A  52		     1		push	edx
+ 0000083B  BA 00000E28 R     1		mov	edx,OFFSET ??0029
+ 00000840  E8 00000000 E     1		call	WriteString
+ 00000845  5A		     1		pop	edx
+ 00000846  B6 07			mov dh, 7
+ 00000848  B2 23			mov dl, 35
+ 0000084A  E8 00000000 E		call gotoxy
+					mwrite "Enter BookName: "
+ 00000E39		     1		.data		
+ 00000E39 45 6E 74 65 72     1		??002A BYTE "Enter BookName: ",0	
+	   20 42 6F 6F 6B
+	   4E 61 6D 65 3A
+	   20 00
+ 0000084F		     1		.code
+ 0000084F  52		     1		push	edx
+ 00000850  BA 00000E39 R     1		mov	edx,OFFSET ??002A
+ 00000855  E8 00000000 E     1		call	WriteString
+ 0000085A  5A		     1		pop	edx
+ 0000085B  BA 0000022F R		mov edx, offset bookName
+ 00000860  B9 000001F5			mov ecx, BUFFER_SIZE
+ 00000865  E8 00000000 E		call readstring
+ 0000086A  A3 00000A17 R		mov stringLength, eax
+ 0000086F  E8 000004FF			call ReadFrmFle
+					.if eax == 0
+ 00000878  B6 09				mov dh, 9
+ 0000087A  B2 1E				mov dl, 30
+ 0000087C  E8 00000000 E			call gotoxy
+						mwrite "Book Not Available in Library"
+ 00000E4A		     1		.data		
+ 00000E4A 42 6F 6F 6B 20     1		??002B BYTE "Book Not Available in Library",0	
+	   4E 6F 74 20 41
+	   76 61 69 6C 61
+	   62 6C 65 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 00
+ 00000881		     1		.code
+ 00000881  52		     1		push	edx
+ 00000882  BA 00000E4A R     1		mov	edx,OFFSET ??002B
+ 00000887  E8 00000000 E     1		call	WriteString
+ 0000088C  5A		     1		pop	edx
+ 0000088D  B8 000007D0				mov eax, 2000
+ 00000892  E8 00000000 E			call delay
+ 00000897  E8 0000083B				call admin
+					.else
+						.if getString == " "
+ 000008AA  B6 09					mov dh, 9
+ 000008AC  B2 1E					mov dl, 30
+ 000008AE  E8 00000000 E				call gotoxy
+							mwrite "Book Not Available in Library"
+ 00000E68		     1		.data		
+ 00000E68 42 6F 6F 6B 20     1		??002C BYTE "Book Not Available in Library",0	
+	   4E 6F 74 20 41
+	   76 61 69 6C 61
+	   62 6C 65 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 00
+ 000008B3		     1		.code
+ 000008B3  52		     1		push	edx
+ 000008B4  BA 00000E68 R     1		mov	edx,OFFSET ??002C
+ 000008B9  E8 00000000 E     1		call	WriteString
+ 000008BE  5A		     1		pop	edx
+ 000008BF  B8 000007D0					mov eax, 2000
+ 000008C4  E8 00000000 E				call delay
+ 000008C9  E8 00000809					call admin
+						.else 
+ 000008D3  E8 00000427					call WriteDelUpdFile
+ 000008D8  B6 08					mov dh, 8
+ 000008DA  B2 23					mov dl, 35
+ 000008DC  E8 00000000 E				call gotoxy
+							mwrite "Enter Author Name: "
+ 00000E86		     1		.data		
+ 00000E86 45 6E 74 65 72     1		??002D BYTE "Enter Author Name: ",0	
+	   20 41 75 74 68
+	   6F 72 20 4E 61
+	   6D 65 3A 20 00
+ 000008E1		     1		.code
+ 000008E1  52		     1		push	edx
+ 000008E2  BA 00000E86 R     1		mov	edx,OFFSET ??002D
+ 000008E7  E8 00000000 E     1		call	WriteString
+ 000008EC  5A		     1		pop	edx
+ 000008ED  BA 00000619 R				mov edx, offset authorName
+ 000008F2  B9 000001F5					mov ecx, BUFFER_SIZE
+ 000008F7  E8 00000000 E				call readstring
+ 000008FC  A3 00000A17 R				mov stringLength, eax
+ 00000901  E8 00000141					call WriteTwoFle
+ 00000906  B6 09					mov dh, 9
+ 00000908  B2 23					mov dl, 35
+ 0000090A  E8 00000000 E				call gotoxy
+							mwrite <"Enter Quantity: ",0>
+ 00000E9A		     1		.data		
+ 00000E9A 45 6E 74 65 72     1		??002E BYTE "Enter Quantity: ",0,0	
+	   20 51 75 61 6E
+	   74 69 74 79 3A
+	   20 00 00
+ 0000090F		     1		.code
+ 0000090F  52		     1		push	edx
+ 00000910  BA 00000E9A R     1		mov	edx,OFFSET ??002E
+ 00000915  E8 00000000 E     1		call	WriteString
+ 0000091A  5A		     1		pop	edx
+ 0000091B  BA 00000619 R				mov edx, offset authorName
+ 00000920  B9 000001F5					mov ecx, BUFFER_SIZE
+ 00000925  E8 00000000 E				call readstring
+ 0000092A  A3 00000A17 R				mov stringLength, eax
+ 0000092F  E8 00000113					call WriteTwoFle
+ 00000934  B6 0B					mov dh, 11
+ 00000936  B2 1E					mov dl, 30
+ 00000938  E8 00000000 E				call gotoxy
+							mwrite "Book Info Updated Successfully"
+ 00000EAC		     1		.data		
+ 00000EAC 42 6F 6F 6B 20     1		??002F BYTE "Book Info Updated Successfully",0	
+	   49 6E 66 6F 20
+	   55 70 64 61 74
+	   65 64 20 53 75
+	   63 63 65 73 73
+	   66 75 6C 6C 79
+	   00
+ 0000093D		     1		.code
+ 0000093D  52		     1		push	edx
+ 0000093E  BA 00000EAC R     1		mov	edx,OFFSET ??002F
+ 00000943  E8 00000000 E     1		call	WriteString
+ 00000948  5A		     1		pop	edx
+ 00000949  B8 000007D0					mov eax, 2000
+ 0000094E  E8 00000000 E				call delay
+ 00000953  E8 0000077F					call admin
+						.endif
+					.endif
+ 00000958  C3				ret
+ 00000959			updateBookInfo endp
+
+ 00000959			CreateOutptFle PROC
+					INVOKE CreateFile, addr bookName, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0
+ 00000975  A3 00000A0B R		mov fileHandle, eax
+					.if eax == INVALID_HANDLE_VALUE
+ 0000097F  B8 00000000				MOV EAX, 0
+ 00000984  C3					RET
+					.ENDIF
+					INVOKE closehandle, filehandle
+ 00000990  C3				ret
+ 00000991			CreateOutptFle ENDP
+
+ 00000991			CreateDelFile proc
+					INVOKE CreateFile, addr bookName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 000009AD  A3 00000A0B R		mov fileHandle, eax
+					.if eax == INVALID_HANDLE_VALUE
+ 000009B7  B8 00000000				MOV EAX, 0
+ 000009BC  C3					RET
+					.ENDIF
+					INVOKE closehandle, filehandle
+ 000009C8  C3				ret
+ 000009C9			CreateDelFile endp
+
+ 000009C9			CreateBorrowFile proc
+					INVOKE CreateFile, addr studentName, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0
+ 000009E5  A3 00000A0B R		mov fileHandle, eax
+					.if eax == INVALID_HANDLE_VALUE
+ 000009EF  B8 00000000				MOV EAX, 0
+ 000009F4  C3					RET
+					.ENDIF
+					INVOKE closehandle, filehandle
+ 00000A00  C3				ret
+ 00000A01			CreateBorrowFile endp
+
+ 00000A01			DeleteFle proc
+					INVOKE CreateFile, addr bookName, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+ 00000A1D  A3 00000A0B R		mov filehandle, eax
+					INVOKE WriteFile, filehandle, addr del, 1, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000A46  C3				ret
+ 00000A47			DeleteFle endp
+
+ 00000A47			WriteTwoFle PROC
+					INVOKE CreateFile, addr bookName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000A63  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr authorName, stringLength, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000ABA  C3				ret
+ 00000ABB			WriteTwoFle ENDP
+
+ 00000ABB			WriteFle proc
+					INVOKE CreateFile, addr bookName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000AD7  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr bookName, stringLength, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000B2E  C3				ret
+ 00000B2F			WriteFle endp
+
+ 00000B2F			WriteFleUser proc
+					INVOKE CreateFile, addr studentName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000B4B  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr studentName, stringLength_1, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000BA2  C3				ret
+ 00000BA3			WriteFleUser endp
+
+ 00000BA3			WriteStudentFile proc
+					INVOKE CreateFile, addr studentName, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+ 00000BBF  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr studentName, stringLength_1, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000C16  C3				ret
+ 00000C17			WriteStudentFile endp
+
+ 00000C17			WriteBorrowFle proc
+					INVOKE CreateFile, addr studentName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000C33  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr bookName, stringLength, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000C8A  C3				ret
+ 00000C8B			WriteBorrowFle endp
+
+ 00000C8B			WriteUserInfo proc
+					INVOKE CreateFile, addr studentName, GENERIC_WRITE, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000CA7  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr authorName, stringLength, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000CFE  C3				ret
+ 00000CFF			WriteUserInfo endp
+
+ 00000CFF			WriteDelUpdFile PROC
+					INVOKE CreateFile, addr bookName, GENERIC_WRITE, DO_NOT_SHARE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+ 00000D1B  A3 00000A0B R		mov filehandle, eax
+					INVOKE SetFilePOinter, filehandle, 0,0, FIlE_END
+					INVOKE WriteFile, filehandle, addr bookName, stringLength, ADDR WriteToFile_1, 0
+					INVOKE WriteFile, filehandle, addr space, 5, ADDR WriteToFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000D72  C3				ret
+ 00000D73			WriteDelUpdFile ENDP
+
+ 00000D73			ReadFrmFle proc
+					INVOKE CreateFile, addr bookName, GENERIC_READ, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000D8F  A3 00000A0B R		mov filehandle, eax
+					.if eax == INVALID_HANDLE_VALUE
+ 00000D99  B8 00000000				mov eax, 0
+ 00000D9E  C3					ret
+					.endif
+					INVOKE ReadFile, filehandle, addr getString, BUFFER_SIZE, ADDR ReadFromFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000DC6  C3				ret
+ 00000DC7			ReadFrmFle ENDP
+
+ 00000DC7			ReadFle proc
+					INVOKE CreateFile, addr fileName, GENERIC_READ, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000DE3  A3 00000A0B R		mov filehandle, eax
+					.if eax == INVALID_HANDLE_VALUE
+ 00000DED  B8 00000000				mov eax, 0
+ 00000DF2  C3					ret
+					.endif
+					INVOKE ReadFile, filehandle, addr getString, BUFFER_SIZE, ADDR ReadFromFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000E1A  C3				ret
+ 00000E1B			ReadFle endp
+
+ 00000E1B			ReadStudentFile proc
+					INVOKE CreateFile, addr studentName, GENERIC_READ, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+ 00000E37  A3 00000A0B R		mov filehandle, eax
+					.if eax == INVALID_HANDLE_VALUE
+ 00000E41  B8 00000000				mov eax, 0
+ 00000E46  C3					ret
+					.endif
+					INVOKE ReadFile, filehandle, addr getString, BUFFER_SIZE, ADDR ReadFromFile_1, 0
+					INVOKE CloseHandle, filehandle
+ 00000E6E  C3				ret
+ 00000E6F			ReadStudentFile ENDP
+
+				;-----------------menu PROC--------------
+
+ 00000E6F			menu proc
+ 00000E6F  E8 00000000 E		call clrscr
+ 00000E74  B6 05			mov dh, 5
+ 00000E76  B2 1E			mov dl, 30
+ 00000E78  E8 00000000 E		call gotoxy
+ 00000E7D  B8 00000002			mov eax, green
+ 00000E82  E8 00000000 E		call SetTextColor
+					mwrite "!!!! Welcome to Library Management System !!!!"
+ 00000ECB		     1		.data		
+ 00000ECB 21 21 21 21 20     1		??0030 BYTE "!!!! Welcome to Library Management System !!!!",0	
+	   57 65 6C 63 6F
+	   6D 65 20 74 6F
+	   20 4C 69 62 72
+	   61 72 79 20 4D
+	   61 6E 61 67 65
+	   6D 65 6E 74 20
+	   53 79 73 74 65
+	   6D 20 21 21 21
+	   21 00
+ 00000E87		     1		.code
+ 00000E87  52		     1		push	edx
+ 00000E88  BA 00000ECB R     1		mov	edx,OFFSET ??0030
+ 00000E8D  E8 00000000 E     1		call	WriteString
+ 00000E92  5A		     1		pop	edx
+ 00000E93  B6 07			mov dh, 7
+ 00000E95  B2 1E			mov dl, 30
+ 00000E97  E8 00000000 E		call gotoxy
+					mwrite "Main Menu of System"
+ 00000EFA		     1		.data		
+ 00000EFA 4D 61 69 6E 20     1		??0031 BYTE "Main Menu of System",0	
+	   4D 65 6E 75 20
+	   6F 66 20 53 79
+	   73 74 65 6D 00
+ 00000E9C		     1		.code
+ 00000E9C  52		     1		push	edx
+ 00000E9D  BA 00000EFA R     1		mov	edx,OFFSET ??0031
+ 00000EA2  E8 00000000 E     1		call	WriteString
+ 00000EA7  5A		     1		pop	edx
+ 00000EA8  B6 08			mov dh, 8
+ 00000EAA  B2 1E			mov dl, 30
+ 00000EAC  E8 00000000 E		call gotoxy
+					mwrite "1. Admin"
+ 00000F0E		     1		.data		
+ 00000F0E 31 2E 20 41 64     1		??0032 BYTE "1. Admin",0	
+	   6D 69 6E 00
+ 00000EB1		     1		.code
+ 00000EB1  52		     1		push	edx
+ 00000EB2  BA 00000F0E R     1		mov	edx,OFFSET ??0032
+ 00000EB7  E8 00000000 E     1		call	WriteString
+ 00000EBC  5A		     1		pop	edx
+ 00000EBD  B6 09			mov dh, 9
+ 00000EBF  B2 1E			mov dl, 30
+ 00000EC1  E8 00000000 E		call gotoxy
+					mwrite "2. User"
+ 00000F17		     1		.data		
+ 00000F17 32 2E 20 55 73     1		??0033 BYTE "2. User",0	
+	   65 72 00
+ 00000EC6		     1		.code
+ 00000EC6  52		     1		push	edx
+ 00000EC7  BA 00000F17 R     1		mov	edx,OFFSET ??0033
+ 00000ECC  E8 00000000 E     1		call	WriteString
+ 00000ED1  5A		     1		pop	edx
+ 00000ED2  B6 0A			mov dh, 10
+ 00000ED4  B2 1E			mov dl, 30
+ 00000ED6  E8 00000000 E		call gotoxy
+					mwrite "0. Exit"
+ 00000F1F		     1		.data		
+ 00000F1F 30 2E 20 45 78     1		??0034 BYTE "0. Exit",0	
+	   69 74 00
+ 00000EDB		     1		.code
+ 00000EDB  52		     1		push	edx
+ 00000EDC  BA 00000F1F R     1		mov	edx,OFFSET ??0034
+ 00000EE1  E8 00000000 E     1		call	WriteString
+ 00000EE6  5A		     1		pop	edx
+ 00000EE7  B6 0B			mov dh, 11
+ 00000EE9  B2 1E			mov dl, 30
+ 00000EEB  E8 00000000 E		call gotoxy
+					mwrite "Select Your Status in Library : "
+ 00000F27		     1		.data		
+ 00000F27 53 65 6C 65 63     1		??0035 BYTE "Select Your Status in Library : ",0	
+	   74 20 59 6F 75
+	   72 20 53 74 61
+	   74 75 73 20 69
+	   6E 20 4C 69 62
+	   72 61 72 79 20
+	   3A 20 00
+ 00000EF0		     1		.code
+ 00000EF0  52		     1		push	edx
+ 00000EF1  BA 00000F27 R     1		mov	edx,OFFSET ??0035
+ 00000EF6  E8 00000000 E     1		call	WriteString
+ 00000EFB  5A		     1		pop	edx
+ 00000EFC  E8 00000000 E		call readint
+ 00000F01  A3 00000000 R		mov choice, eax
+					.if choice == 1
+ 00000F0F  E8 00000042				call login
+					.elseif choice == 2
+ 00000F1F  E8 00000366				call user
+					.elseif choice == 0
+						exit
+					.else
+ 00000F38  B6 0D				mov dh, 13
+ 00000F3A  B2 23				mov dl, 35
+ 00000F3C  E8 00000000 E			call gotoxy
+ 00000F41  E8 00000412				call invalid
+ 00000F46  B8 000003E8				mov eax, 1000
+ 00000F4B  E8 00000000 E			call delay
+ 00000F50  E8 FFFFFF1A				call menu
+					.endif
+ 00000F55  C3				ret
+ 00000F56			menu endp
+
+				;------------menu endp-------------------
+
+				;-----------login proc-------------------
+
+ 00000F56			login proc
+ 00000F56  E8 00000000 E		call clrscr
+ 00000F5B  B6 05			mov dh, 5
+ 00000F5D  B2 1E			mov dl, 30
+ 00000F5F  E8 00000000 E		call gotoxy
+					mwrite "!!!! LogIn Section !!!!"
+ 00000F48		     1		.data		
+ 00000F48 21 21 21 21 20     1		??0036 BYTE "!!!! LogIn Section !!!!",0	
+	   4C 6F 67 49 6E
+	   20 53 65 63 74
+	   69 6F 6E 20 21
+	   21 21 21 00
+ 00000F64		     1		.code
+ 00000F64  52		     1		push	edx
+ 00000F65  BA 00000F48 R     1		mov	edx,OFFSET ??0036
+ 00000F6A  E8 00000000 E     1		call	WriteString
+ 00000F6F  5A		     1		pop	edx
+ 00000F70  B6 07			mov dh, 7
+ 00000F72  B2 23			mov dl, 35
+ 00000F74  E8 00000000 E		call gotoxy
+					mwrite "Enter userName : "
+ 00000F60		     1		.data		
+ 00000F60 45 6E 74 65 72     1		??0037 BYTE "Enter userName : ",0	
+	   20 75 73 65 72
+	   4E 61 6D 65 20
+	   3A 20 00
+ 00000F79		     1		.code
+ 00000F79  52		     1		push	edx
+ 00000F7A  BA 00000F60 R     1		mov	edx,OFFSET ??0037
+ 00000F7F  E8 00000000 E     1		call	WriteString
+ 00000F84  5A		     1		pop	edx
+ 00000F85  BA 00000036 R		mov edx, offset adminstudentName
+ 00000F8A  B9 000001F5			mov ecx, sizeof adminstudentName
+ 00000F8F  E8 00000000 E		call readstring
+ 00000F94  B6 09			mov dh, 9
+ 00000F96  B2 23			mov dl, 35
+ 00000F98  E8 00000000 E		call gotoxy
+					mwrite "Enter Password : "
+ 00000F72		     1		.data		
+ 00000F72 45 6E 74 65 72     1		??0038 BYTE "Enter Password : ",0	
+	   20 50 61 73 73
+	   77 6F 72 64 20
+	   3A 20 00
+ 00000F9D		     1		.code
+ 00000F9D  52		     1		push	edx
+ 00000F9E  BA 00000F72 R     1		mov	edx,OFFSET ??0038
+ 00000FA3  E8 00000000 E     1		call	WriteString
+ 00000FA8  5A		     1		pop	edx
+ 00000FA9  E8 00000000 E		call readint
+ 00000FAE  A3 0000022B R		mov adminPassword, eax
+					.if adminPassword == 123 && adminstudentName == "a"
+ 00000FC5  B8 000005DC				mov eax, 1500
+ 00000FCA  E8 00000000 E			call delay
+ 00000FCF  B6 0B				mov dh, 11
+ 00000FD1  B2 1E				mov dl, 30
+ 00000FD3  E8 00000000 E			call gotoxy
+						mwrite "Login Successfully"
+ 00000F84		     1		.data		
+ 00000F84 4C 6F 67 69 6E     1		??0039 BYTE "Login Successfully",0	
+	   20 53 75 63 63
+	   65 73 73 66 75
+	   6C 6C 79 00
+ 00000FD8		     1		.code
+ 00000FD8  52		     1		push	edx
+ 00000FD9  BA 00000F84 R     1		mov	edx,OFFSET ??0039
+ 00000FDE  E8 00000000 E     1		call	WriteString
+ 00000FE3  5A		     1		pop	edx
+ 00000FE4  B8 000001F4				mov eax, 500
+ 00000FE9  E8 00000000 E			call delay
+ 00000FEE  E8 000000E4				call admin
+					.else
+ 00000FF5  B8 000005DC				mov eax, 1500
+ 00000FFA  E8 00000000 E			call delay
+ 00000FFF  B6 0B				mov dh, 11
+ 00001001  B2 1E				mov dl, 30
+ 00001003  E8 00000000 E			call gotoxy
+						mwrite "Your Password/userName is Incorrect !!!!!!!"
+ 00000F97		     1		.data		
+ 00000F97 59 6F 75 72 20     1		??003A BYTE "Your Password/userName is Incorrect !!!!!!!",0	
+	   50 61 73 73 77
+	   6F 72 64 2F 75
+	   73 65 72 4E 61
+	   6D 65 20 69 73
+	   20 49 6E 63 6F
+	   72 72 65 63 74
+	   20 21 21 21 21
+	   21 21 21 00
+ 00001008		     1		.code
+ 00001008  52		     1		push	edx
+ 00001009  BA 00000F97 R     1		mov	edx,OFFSET ??003A
+ 0000100E  E8 00000000 E     1		call	WriteString
+ 00001013  5A		     1		pop	edx
+ 00001014  B8 000003E8				mov eax, 1000
+ 00001019  E8 00000000 E			call delay
+ 0000101E  E8 00000001				call loginAgain
+					.endif
+ 00001023  C3				ret
+ 00001024			login endp
+				;-----------login endp-----------------------
+
+				;----------loginAgain proc-------------------
+ 00001024			loginAgain proc
+ 00001024  E8 00000000 E		call clrscr
+ 00001029  B6 06			mov dh, 6
+ 0000102B  B2 1E			mov dl, 30
+ 0000102D  E8 00000000 E		call gotoxy
+					mwrite "1. Login Again"
+ 00000FC3		     1		.data		
+ 00000FC3 31 2E 20 4C 6F     1		??003B BYTE "1. Login Again",0	
+	   67 69 6E 20 41
+	   67 61 69 6E 00
+ 00001032		     1		.code
+ 00001032  52		     1		push	edx
+ 00001033  BA 00000FC3 R     1		mov	edx,OFFSET ??003B
+ 00001038  E8 00000000 E     1		call	WriteString
+ 0000103D  5A		     1		pop	edx
+ 0000103E  B6 07			mov dh, 7
+ 00001040  B2 1E			mov dl, 30
+ 00001042  E8 00000000 E		call gotoxy
+					mwrite "2. Main Menu"
+ 00000FD2		     1		.data		
+ 00000FD2 32 2E 20 4D 61     1		??003C BYTE "2. Main Menu",0	
+	   69 6E 20 4D 65
+	   6E 75 00
+ 00001047		     1		.code
+ 00001047  52		     1		push	edx
+ 00001048  BA 00000FD2 R     1		mov	edx,OFFSET ??003C
+ 0000104D  E8 00000000 E     1		call	WriteString
+ 00001052  5A		     1		pop	edx
+ 00001053  B6 08			mov dh, 8
+ 00001055  B2 1E			mov dl, 30
+ 00001057  E8 00000000 E		call gotoxy
+					mwrite "0. Exit"
+ 00000FDF		     1		.data		
+ 00000FDF 30 2E 20 45 78     1		??003D BYTE "0. Exit",0	
+	   69 74 00
+ 0000105C		     1		.code
+ 0000105C  52		     1		push	edx
+ 0000105D  BA 00000FDF R     1		mov	edx,OFFSET ??003D
+ 00001062  E8 00000000 E     1		call	WriteString
+ 00001067  5A		     1		pop	edx
+ 00001068  B6 09			mov dh, 9
+ 0000106A  B2 1E			mov dl, 30
+ 0000106C  E8 00000000 E		call gotoxy
+					mwrite "Enter Your Choice : "
+ 00000FE7		     1		.data		
+ 00000FE7 45 6E 74 65 72     1		??003E BYTE "Enter Your Choice : ",0	
+	   20 59 6F 75 72
+	   20 43 68 6F 69
+	   63 65 20 3A 20
+	   00
+ 00001071		     1		.code
+ 00001071  52		     1		push	edx
+ 00001072  BA 00000FE7 R     1		mov	edx,OFFSET ??003E
+ 00001077  E8 00000000 E     1		call	WriteString
+ 0000107C  5A		     1		pop	edx
+ 0000107D  E8 00000000 E		call readint
+ 00001082  A3 00000000 R		mov choice, eax
+					.if choice == 1
+ 00001090  E8 FFFFFEC1				call login
+					.elseif choice == 2
+ 000010A0  E8 FFFFFDCA				call menu
+					.elseif choice == 0
+						exit
+					.else
+ 000010B9  B6 0B				mov dh, 11
+ 000010BB  B2 23				mov dl, 35
+ 000010BD  E8 00000000 E			call gotoxy
+ 000010C2  E8 00000291				call invalid
+ 000010C7  B8 000003E8				mov eax, 1000
+ 000010CC  E8 00000000 E			call delay
+ 000010D1  E8 FFFFFF4E				call loginAgain
+					.endif
+ 000010D6  C3				ret
+ 000010D7			loginAgain endp
+				;---------loginAgain endp--------------------
+
+				;-----------admin proc-----------------------
+
+ 000010D7			admin proc
+ 000010D7  E8 00000000 E		call clrscr
+ 000010DC  B6 05			mov dh, 5
+ 000010DE  B2 1E			mov dl, 30
+ 000010E0  E8 00000000 E		call gotoxy
+					mwrite "!!!! Tasks List that You can perform as Admin !!!!"
+ 00000FFC		     1		.data		
+ 00000FFC 21 21 21 21 20     1		??003F BYTE "!!!! Tasks List that You can perform as Admin !!!!",0	
+	   54 61 73 6B 73
+	   20 4C 69 73 74
+	   20 74 68 61 74
+	   20 59 6F 75 20
+	   63 61 6E 20 70
+	   65 72 66 6F 72
+	   6D 20 61 73 20
+	   41 64 6D 69 6E
+	   20 21 21 21 21
+	   00
+ 000010E5		     1		.code
+ 000010E5  52		     1		push	edx
+ 000010E6  BA 00000FFC R     1		mov	edx,OFFSET ??003F
+ 000010EB  E8 00000000 E     1		call	WriteString
+ 000010F0  5A		     1		pop	edx
+ 000010F1  B6 07			mov dh, 7
+ 000010F3  B2 23			mov dl, 35
+ 000010F5  E8 00000000 E		call gotoxy
+					mwrite "1. Add Book"
+ 0000102F		     1		.data		
+ 0000102F 31 2E 20 41 64     1		??0040 BYTE "1. Add Book",0	
+	   64 20 42 6F 6F
+	   6B 00
+ 000010FA		     1		.code
+ 000010FA  52		     1		push	edx
+ 000010FB  BA 0000102F R     1		mov	edx,OFFSET ??0040
+ 00001100  E8 00000000 E     1		call	WriteString
+ 00001105  5A		     1		pop	edx
+ 00001106  B6 08			mov dh, 8
+ 00001108  B2 23			mov dl, 35
+ 0000110A  E8 00000000 E		call gotoxy
+					mwrite "2. Search Book"
+ 0000103B		     1		.data		
+ 0000103B 32 2E 20 53 65     1		??0041 BYTE "2. Search Book",0	
+	   61 72 63 68 20
+	   42 6F 6F 6B 00
+ 0000110F		     1		.code
+ 0000110F  52		     1		push	edx
+ 00001110  BA 0000103B R     1		mov	edx,OFFSET ??0041
+ 00001115  E8 00000000 E     1		call	WriteString
+ 0000111A  5A		     1		pop	edx
+ 0000111B  B6 09			mov dh, 9
+ 0000111D  B2 23			mov dl, 35
+ 0000111F  E8 00000000 E		call gotoxy
+					mwrite "3. Delete Book"
+ 0000104A		     1		.data		
+ 0000104A 33 2E 20 44 65     1		??0042 BYTE "3. Delete Book",0	
+	   6C 65 74 65 20
+	   42 6F 6F 6B 00
+ 00001124		     1		.code
+ 00001124  52		     1		push	edx
+ 00001125  BA 0000104A R     1		mov	edx,OFFSET ??0042
+ 0000112A  E8 00000000 E     1		call	WriteString
+ 0000112F  5A		     1		pop	edx
+ 00001130  B6 0A			mov dh, 10
+ 00001132  B2 23			mov dl, 35
+ 00001134  E8 00000000 E		call gotoxy
+					mwrite "4. Borrow Book"
+ 00001059		     1		.data		
+ 00001059 34 2E 20 42 6F     1		??0043 BYTE "4. Borrow Book",0	
+	   72 72 6F 77 20
+	   42 6F 6F 6B 00
+ 00001139		     1		.code
+ 00001139  52		     1		push	edx
+ 0000113A  BA 00001059 R     1		mov	edx,OFFSET ??0043
+ 0000113F  E8 00000000 E     1		call	WriteString
+ 00001144  5A		     1		pop	edx
+ 00001145  B6 0B			mov dh, 11
+ 00001147  B2 23			mov dl, 35
+ 00001149  E8 00000000 E		call gotoxy
+					mwrite "5. Return Book"
+ 00001068		     1		.data		
+ 00001068 35 2E 20 52 65     1		??0044 BYTE "5. Return Book",0	
+	   74 75 72 6E 20
+	   42 6F 6F 6B 00
+ 0000114E		     1		.code
+ 0000114E  52		     1		push	edx
+ 0000114F  BA 00001068 R     1		mov	edx,OFFSET ??0044
+ 00001154  E8 00000000 E     1		call	WriteString
+ 00001159  5A		     1		pop	edx
+ 0000115A  B6 0C			mov dh, 12
+ 0000115C  B2 23			mov dl, 35
+ 0000115E  E8 00000000 E		call gotoxy
+					mwrite "6. Update Book Info"
+ 00001077		     1		.data		
+ 00001077 36 2E 20 55 70     1		??0045 BYTE "6. Update Book Info",0	
+	   64 61 74 65 20
+	   42 6F 6F 6B 20
+	   49 6E 66 6F 00
+ 00001163		     1		.code
+ 00001163  52		     1		push	edx
+ 00001164  BA 00001077 R     1		mov	edx,OFFSET ??0045
+ 00001169  E8 00000000 E     1		call	WriteString
+ 0000116E  5A		     1		pop	edx
+ 0000116F  B6 0D			mov dh, 13
+ 00001171  B2 23			mov dl, 35
+ 00001173  E8 00000000 E		call gotoxy
+					mwrite "7. See Content"
+ 0000108B		     1		.data		
+ 0000108B 37 2E 20 53 65     1		??0046 BYTE "7. See Content",0	
+	   65 20 43 6F 6E
+	   74 65 6E 74 00
+ 00001178		     1		.code
+ 00001178  52		     1		push	edx
+ 00001179  BA 0000108B R     1		mov	edx,OFFSET ??0046
+ 0000117E  E8 00000000 E     1		call	WriteString
+ 00001183  5A		     1		pop	edx
+ 00001184  B6 0E			mov dh, 14
+ 00001186  B2 23			mov dl, 35
+ 00001188  E8 00000000 E		call gotoxy
+					mwrite "8. Main Menu"
+ 0000109A		     1		.data		
+ 0000109A 38 2E 20 4D 61     1		??0047 BYTE "8. Main Menu",0	
+	   69 6E 20 4D 65
+	   6E 75 00
+ 0000118D		     1		.code
+ 0000118D  52		     1		push	edx
+ 0000118E  BA 0000109A R     1		mov	edx,OFFSET ??0047
+ 00001193  E8 00000000 E     1		call	WriteString
+ 00001198  5A		     1		pop	edx
+ 00001199  B6 0F			mov dh, 15
+ 0000119B  B2 23			mov dl, 35
+ 0000119D  E8 00000000 E		call gotoxy
+					mwrite "0. Logout"
+ 000010A7		     1		.data		
+ 000010A7 30 2E 20 4C 6F     1		??0048 BYTE "0. Logout",0	
+	   67 6F 75 74 00
+ 000011A2		     1		.code
+ 000011A2  52		     1		push	edx
+ 000011A3  BA 000010A7 R     1		mov	edx,OFFSET ??0048
+ 000011A8  E8 00000000 E     1		call	WriteString
+ 000011AD  5A		     1		pop	edx
+ 000011AE  B6 11			mov dh, 17
+ 000011B0  B2 1E			mov dl, 30
+ 000011B2  E8 00000000 E		call gotoxy
+					mwrite "Enter Your Choice : "
+ 000010B1		     1		.data		
+ 000010B1 45 6E 74 65 72     1		??0049 BYTE "Enter Your Choice : ",0	
+	   20 59 6F 75 72
+	   20 43 68 6F 69
+	   63 65 20 3A 20
+	   00
+ 000011B7		     1		.code
+ 000011B7  52		     1		push	edx
+ 000011B8  BA 000010B1 R     1		mov	edx,OFFSET ??0049
+ 000011BD  E8 00000000 E     1		call	WriteString
+ 000011C2  5A		     1		pop	edx
+ 000011C3  E8 00000000 E		call readint
+ 000011C8  A3 00000000 R		mov choice, eax
+					.if choice == 1
+ 000011D6  E8 FFFFEE25				call addBook
+					.elseif choice == 2
+ 000011E9  E8 FFFFF049				call SearchBook
+					.elseif choice == 3
+ 000011FC  E8 FFFFF560				call deleteBook
+					.elseif choice == 4
+ 0000120F  E8 FFFFF21F				call borrowBook
+					.elseif choice == 5
+ 0000121F  E8 FFFFF437				call returnBook
+					.elseif choice == 6
+ 0000122F  E8 FFFFF5F8				call updateBookInfo
+					.elseif choice == 7
+						invoke seeContent, choice
+					.elseif choice == 8
+ 00001255  E8 FFFFFC15				call menu
+					.elseif choice == 0
+ 00001265  E8 FFFFFDBA				call loginAgain
+					.else
+ 0000126C  B6 12				mov dh, 18
+ 0000126E  B2 23				mov dl, 35
+ 00001270  E8 00000000 E			call gotoxy
+ 00001275  E8 000000DE				call invalid
+ 0000127A  B8 000003E8				mov eax, 1000
+ 0000127F  E8 00000000 E			call delay
+ 00001284  E8 FFFFFE4E				call admin
+					.endif
+ 00001289  C3				ret
+ 0000128A			admin endp
+				;-----------admin proc-------------------
+
+				;-----------user proc--------------------
+ 0000128A			user proc
+ 0000128A  E8 00000000 E		call clrscr
+ 0000128F  B6 05			mov dh, 5
+ 00001291  B2 1E			mov dl, 30
+ 00001293  E8 00000000 E		call gotoxy
+					mwrite "!!!! Tasks List that You can perform as User !!!!"
+ 000010C6		     1		.data		
+ 000010C6 21 21 21 21 20     1		??004A BYTE "!!!! Tasks List that You can perform as User !!!!",0	
+	   54 61 73 6B 73
+	   20 4C 69 73 74
+	   20 74 68 61 74
+	   20 59 6F 75 20
+	   63 61 6E 20 70
+	   65 72 66 6F 72
+	   6D 20 61 73 20
+	   55 73 65 72 20
+	   21 21 21 21 00
+ 00001298		     1		.code
+ 00001298  52		     1		push	edx
+ 00001299  BA 000010C6 R     1		mov	edx,OFFSET ??004A
+ 0000129E  E8 00000000 E     1		call	WriteString
+ 000012A3  5A		     1		pop	edx
+ 000012A4  B6 07			mov dh, 7
+ 000012A6  B2 23			mov dl, 35
+ 000012A8  E8 00000000 E		call gotoxy
+					mwrite "1. See Content"
+ 000010F8		     1		.data		
+ 000010F8 31 2E 20 53 65     1		??004B BYTE "1. See Content",0	
+	   65 20 43 6F 6E
+	   74 65 6E 74 00
+ 000012AD		     1		.code
+ 000012AD  52		     1		push	edx
+ 000012AE  BA 000010F8 R     1		mov	edx,OFFSET ??004B
+ 000012B3  E8 00000000 E     1		call	WriteString
+ 000012B8  5A		     1		pop	edx
+ 000012B9  B6 08			mov dh, 8
+ 000012BB  B2 23			mov dl, 35
+ 000012BD  E8 00000000 E		call gotoxy
+					mwrite "2. Main Menu"
+ 00001107		     1		.data		
+ 00001107 32 2E 20 4D 61     1		??004C BYTE "2. Main Menu",0	
+	   69 6E 20 4D 65
+	   6E 75 00
+ 000012C2		     1		.code
+ 000012C2  52		     1		push	edx
+ 000012C3  BA 00001107 R     1		mov	edx,OFFSET ??004C
+ 000012C8  E8 00000000 E     1		call	WriteString
+ 000012CD  5A		     1		pop	edx
+ 000012CE  B6 09			mov dh, 9
+ 000012D0  B2 23			mov dl, 35
+ 000012D2  E8 00000000 E		call gotoxy
+					mwrite "0. Exit"
+ 00001114		     1		.data		
+ 00001114 30 2E 20 45 78     1		??004D BYTE "0. Exit",0	
+	   69 74 00
+ 000012D7		     1		.code
+ 000012D7  52		     1		push	edx
+ 000012D8  BA 00001114 R     1		mov	edx,OFFSET ??004D
+ 000012DD  E8 00000000 E     1		call	WriteString
+ 000012E2  5A		     1		pop	edx
+ 000012E3  B6 0B			mov dh, 11
+ 000012E5  B2 1E			mov dl, 30
+ 000012E7  E8 00000000 E		call gotoxy
+					mwrite "Enter Your Choice : "
+ 0000111C		     1		.data		
+ 0000111C 45 6E 74 65 72     1		??004E BYTE "Enter Your Choice : ",0	
+	   20 59 6F 75 72
+	   20 43 68 6F 69
+	   63 65 20 3A 20
+	   00
+ 000012EC		     1		.code
+ 000012EC  52		     1		push	edx
+ 000012ED  BA 0000111C R     1		mov	edx,OFFSET ??004E
+ 000012F2  E8 00000000 E     1		call	WriteString
+ 000012F7  5A		     1		pop	edx
+ 000012F8  E8 00000000 E		call readint
+ 000012FD  A3 00000000 R		mov choice, eax
+					.if choice == 1
+						invoke seeContent, choice
+					.elseif choice == 2
+ 00001321  E8 FFFFFB49				call menu
+					.elseif choice == 0
+						exit
+					.else
+ 0000133A  B6 0D				mov dh, 13
+ 0000133C  B2 23				mov dl, 35
+ 0000133E  E8 00000000 E			call gotoxy
+ 00001343  E8 00000010				call invalid
+ 00001348  B8 000003E8				mov eax, 1000
+ 0000134D  E8 00000000 E			call delay
+ 00001352  E8 FFFFFF33				call user
+					.endif
+ 00001357  C3				ret
+ 00001358			user endp
+				;-----------user proc--------------------
+
+				;----------invalid proc------------------
+
+ 00001358			invalid proc
+					mwrite "Invalid Choice !!!!"
+ 00001131		     1		.data		
+ 00001131 49 6E 76 61 6C     1		??004F BYTE "Invalid Choice !!!!",0	
+	   69 64 20 43 68
+	   6F 69 63 65 20
+	   21 21 21 21 00
+ 00001358		     1		.code
+ 00001358  52		     1		push	edx
+ 00001359  BA 00001131 R     1		mov	edx,OFFSET ??004F
+ 0000135E  E8 00000000 E     1		call	WriteString
+ 00001363  5A		     1		pop	edx
+ 00001364  C3				ret
+ 00001365			invalid endp
+
+				;----------invalid proc------------------
+
+				;----------main proc---------------------
+
+ 00001365			main proc
+ 00001365  BB 00000004 R		mov ebx,OFFSET caption
+ 0000136A  BA 00000011 R		mov edx,OFFSET HelloMsg
+ 0000136F  E8 00000000 E		call MsgBox
+ 00001374  E8 FFFFFAF6			call menu
+ 00001379  E8 00000000 E		call crlf
+				exit
+ 00001385			main endP
+				end main
+
+				;------------main proc-------------------s
+Microsoft (R) Macro Assembler Version 14.29.30146.0	    12/07/22 10:58:09
+Libray Management Syste				     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+IsDefined  . . . . . . . . . . .	Func
+Startup  . . . . . . . . . . . .	Proc
+mDumpMem . . . . . . . . . . . .	Proc
+mDump  . . . . . . . . . . . . .	Proc
+mGotoxy  . . . . . . . . . . . .	Proc
+mReadString  . . . . . . . . . .	Proc
+mShowRegister  . . . . . . . . .	Proc
+mShow  . . . . . . . . . . . . .	Proc
+mWriteLn . . . . . . . . . . . .	Proc
+mWriteSpace  . . . . . . . . . .	Proc
+mWriteString . . . . . . . . . .	Proc
+mWrite . . . . . . . . . . . . .	Proc
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000008
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 DWord
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPosition . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  dwMaximumWindowSize  . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+FOCUS_EVENT_RECORD . . . . . . .	 00000004
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+FPU_ENVIRON  . . . . . . . . . .	 0000001C
+  controlWord  . . . . . . . . .	 00000000	 Word
+  statusWord . . . . . . . . . .	 00000004	 Word
+  tagWord  . . . . . . . . . . .	 00000008	 Word
+  instrPointerOffset . . . . . .	 0000000C	 DWord
+  instrPointerSelector . . . . .	 00000010	 DWord
+  operandPointerOffset . . . . .	 00000014	 DWord
+  operandPointerSelector . . . .	 00000018	 Word
+INPUT_RECORD . . . . . . . . . .	 00000014
+  EventType  . . . . . . . . . .	 00000000	 Word
+  Event  . . . . . . . . . . . .	 00000004	 XmmWord
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+KEY_EVENT_RECORD . . . . . . . .	 00000010
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+MENU_EVENT_RECORD  . . . . . . .	 00000004
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+MOUSE_EVENT_RECORD . . . . . . .	 00000010
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+WINDOW_BUFFER_SIZE_RECORD  . . .	 00000004
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00001145 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00001385 Para	  Public  'CODE'	
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateBorrowFile . . . . . . . .	P Near	 000009C9 _TEXT	Length= 00000038 Public STDCALL
+CreateDelFile  . . . . . . . . .	P Near	 00000991 _TEXT	Length= 00000038 Public STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateOutptFle . . . . . . . . .	P Near	 00000959 _TEXT	Length= 00000038 Public STDCALL
+CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DeleteFle  . . . . . . . . . . .	P Near	 00000A01 _TEXT	Length= 00000046 Public STDCALL
+DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FormatMessageA . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLastError . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMaxXY . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBox . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseDecimal32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadDec  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFle  . . . . . . . . . . . .	P Near	 00000DC7 _TEXT	Length= 00000054 Public STDCALL
+ReadFloat  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFrmFle . . . . . . . . . . .	P Near	 00000D73 _TEXT	Length= 00000054 Public STDCALL
+ReadFromFile . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadHex  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadStudentFile  . . . . . . . .	P Near	 00000E1B _TEXT	Length= 00000054 Public STDCALL
+SearchBook . . . . . . . . . . .	P Near	 00000237 _TEXT	Length= 000000E9 Public STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBorrowFle . . . . . . . . .	P Near	 00000C17 _TEXT	Length= 00000074 Public STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDelUpdFile  . . . . . . . .	P Near	 00000CFF _TEXT	Length= 00000074 Public STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFleUser . . . . . . . . . .	P Near	 00000B2F _TEXT	Length= 00000074 Public STDCALL
+WriteFle . . . . . . . . . . . .	P Near	 00000ABB _TEXT	Length= 00000074 Public STDCALL
+WriteFloat . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHexB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStudentFile . . . . . . . .	P Near	 00000BA3 _TEXT	Length= 00000074 Public STDCALL
+WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteTwoFle  . . . . . . . . . .	P Near	 00000A47 _TEXT	Length= 00000074 Public STDCALL
+WriteUserInfo  . . . . . . . . .	P Near	 00000C8B _TEXT	Length= 00000074 Public STDCALL
+WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+addBook  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000237 Public STDCALL
+admin  . . . . . . . . . . . . .	P Near	 000010D7 _TEXT	Length= 000001B3 Public STDCALL
+borrowBook . . . . . . . . . . .	P Near	 00000433 _TEXT	Length= 00000228 Public STDCALL
+  p  . . . . . . . . . . . . . .	L Near	 0000047F _TEXT	
+deleteBook . . . . . . . . . . .	P Near	 00000761 _TEXT	Length= 000000CB Public STDCALL
+invalid  . . . . . . . . . . . .	P Near	 00001358 _TEXT	Length= 0000000D Public STDCALL
+loginAgain . . . . . . . . . . .	P Near	 00001024 _TEXT	Length= 000000B3 Public STDCALL
+login  . . . . . . . . . . . . .	P Near	 00000F56 _TEXT	Length= 000000CE Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00001365 _TEXT	Length= 00000020 Public STDCALL
+menu . . . . . . . . . . . . . .	P Near	 00000E6F _TEXT	Length= 000000E7 Public STDCALL
+printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+returnBook . . . . . . . . . . .	P Near	 0000065B _TEXT	Length= 00000106 Public STDCALL
+scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+seeContentBorrowBook . . . . . .	P Near	 000003B2 _TEXT	Length= 00000081 Public STDCALL
+seeContent . . . . . . . . . . .	P Near	 00000320 _TEXT	Length= 00000092 Public STDCALL
+  var  . . . . . . . . . . . . .	DWord	 bp + 00000008
+updateBookInfo . . . . . . . . .	P Near	 0000082C _TEXT	Length= 0000012D Public STDCALL
+user . . . . . . . . . . . . . .	P Near	 0000128A _TEXT	Length= 000000CE Public STDCALL
+wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	Byte	 00000A2F _DATA	
+??0001 . . . . . . . . . . . . .	Byte	 00000A4C _DATA	
+??0002 . . . . . . . . . . . . .	Byte	 00000A59 _DATA	
+??0003 . . . . . . . . . . . . .	Byte	 00000A6D _DATA	
+??0004 . . . . . . . . . . . . .	Byte	 00000A7E _DATA	
+??0005 . . . . . . . . . . . . .	Byte	 00000A96 _DATA	
+??0006 . . . . . . . . . . . . .	Byte	 00000AAA _DATA	
+??0007 . . . . . . . . . . . . .	Byte	 00000ABB _DATA	
+??0008 . . . . . . . . . . . . .	Byte	 00000AD3 _DATA	
+??0009 . . . . . . . . . . . . .	Byte	 00000AF3 _DATA	
+??000A . . . . . . . . . . . . .	Byte	 00000AFF _DATA	
+??000B . . . . . . . . . . . . .	Byte	 00000B11 _DATA	
+??000C . . . . . . . . . . . . .	Byte	 00000B38 _DATA	
+??000D . . . . . . . . . . . . .	Byte	 00000B5F _DATA	
+??000E . . . . . . . . . . . . .	Byte	 00000B7F _DATA	
+??000F . . . . . . . . . . . . .	Byte	 00000BA4 _DATA	
+??0010 . . . . . . . . . . . . .	Byte	 00000BC0 _DATA	
+??0011 . . . . . . . . . . . . .	Byte	 00000BDB _DATA	
+??0012 . . . . . . . . . . . . .	Byte	 00000BF7 _DATA	
+??0013 . . . . . . . . . . . . .	Byte	 00000C12 _DATA	
+??0014 . . . . . . . . . . . . .	Byte	 00000C2D _DATA	
+??0015 . . . . . . . . . . . . .	Byte	 00000C39 _DATA	
+??0016 . . . . . . . . . . . . .	Byte	 00000C4E _DATA	
+??0017 . . . . . . . . . . . . .	Byte	 00000C60 _DATA	
+??0018 . . . . . . . . . . . . .	Byte	 00000C7E _DATA	
+??0019 . . . . . . . . . . . . .	Byte	 00000C9C _DATA	
+??001A . . . . . . . . . . . . .	Byte	 00000CBC _DATA	
+??001B . . . . . . . . . . . . .	Byte	 00000CCE _DATA	
+??001C . . . . . . . . . . . . .	Byte	 00000CDD _DATA	
+??001D . . . . . . . . . . . . .	Byte	 00000CF8 _DATA	
+??001E . . . . . . . . . . . . .	Byte	 00000D04 _DATA	
+??001F . . . . . . . . . . . . .	Byte	 00000D19 _DATA	
+??0020 . . . . . . . . . . . . .	Byte	 00000D2B _DATA	
+??0021 . . . . . . . . . . . . .	Byte	 00000D4C _DATA	
+??0022 . . . . . . . . . . . . .	Byte	 00000D66 _DATA	
+??0023 . . . . . . . . . . . . .	Byte	 00000D96 _DATA	
+??0024 . . . . . . . . . . . . .	Byte	 00000DB1 _DATA	
+??0025 . . . . . . . . . . . . .	Byte	 00000DBD _DATA	
+??0026 . . . . . . . . . . . . .	Byte	 00000DCF _DATA	
+??0027 . . . . . . . . . . . . .	Byte	 00000DED _DATA	
+??0028 . . . . . . . . . . . . .	Byte	 00000E0B _DATA	
+??0029 . . . . . . . . . . . . .	Byte	 00000E28 _DATA	
+??002A . . . . . . . . . . . . .	Byte	 00000E39 _DATA	
+??002B . . . . . . . . . . . . .	Byte	 00000E4A _DATA	
+??002C . . . . . . . . . . . . .	Byte	 00000E68 _DATA	
+??002D . . . . . . . . . . . . .	Byte	 00000E86 _DATA	
+??002E . . . . . . . . . . . . .	Byte	 00000E9A _DATA	
+??002F . . . . . . . . . . . . .	Byte	 00000EAC _DATA	
+??0030 . . . . . . . . . . . . .	Byte	 00000ECB _DATA	
+??0031 . . . . . . . . . . . . .	Byte	 00000EFA _DATA	
+??0032 . . . . . . . . . . . . .	Byte	 00000F0E _DATA	
+??0033 . . . . . . . . . . . . .	Byte	 00000F17 _DATA	
+??0034 . . . . . . . . . . . . .	Byte	 00000F1F _DATA	
+??0035 . . . . . . . . . . . . .	Byte	 00000F27 _DATA	
+??0036 . . . . . . . . . . . . .	Byte	 00000F48 _DATA	
+??0037 . . . . . . . . . . . . .	Byte	 00000F60 _DATA	
+??0038 . . . . . . . . . . . . .	Byte	 00000F72 _DATA	
+??0039 . . . . . . . . . . . . .	Byte	 00000F84 _DATA	
+??003A . . . . . . . . . . . . .	Byte	 00000F97 _DATA	
+??003B . . . . . . . . . . . . .	Byte	 00000FC3 _DATA	
+??003C . . . . . . . . . . . . .	Byte	 00000FD2 _DATA	
+??003D . . . . . . . . . . . . .	Byte	 00000FDF _DATA	
+??003E . . . . . . . . . . . . .	Byte	 00000FE7 _DATA	
+??003F . . . . . . . . . . . . .	Byte	 00000FFC _DATA	
+??0040 . . . . . . . . . . . . .	Byte	 0000102F _DATA	
+??0041 . . . . . . . . . . . . .	Byte	 0000103B _DATA	
+??0042 . . . . . . . . . . . . .	Byte	 0000104A _DATA	
+??0043 . . . . . . . . . . . . .	Byte	 00001059 _DATA	
+??0044 . . . . . . . . . . . . .	Byte	 00001068 _DATA	
+??0045 . . . . . . . . . . . . .	Byte	 00001077 _DATA	
+??0046 . . . . . . . . . . . . .	Byte	 0000108B _DATA	
+??0047 . . . . . . . . . . . . .	Byte	 0000109A _DATA	
+??0048 . . . . . . . . . . . . .	Byte	 000010A7 _DATA	
+??0049 . . . . . . . . . . . . .	Byte	 000010B1 _DATA	
+??004A . . . . . . . . . . . . .	Byte	 000010C6 _DATA	
+??004B . . . . . . . . . . . . .	Byte	 000010F8 _DATA	
+??004C . . . . . . . . . . . . .	Byte	 00001107 _DATA	
+??004D . . . . . . . . . . . . .	Byte	 00001114 _DATA	
+??004E . . . . . . . . . . . . .	Byte	 0000111C _DATA	
+??004F . . . . . . . . . . . . .	Byte	 00001131 _DATA	
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+ALT_MASK . . . . . . . . . . . .	Number	 00000003h   
+BUFFER_SIZE  . . . . . . . . . .	Number	 000001F5h   
+CAPSLOCK_ON  . . . . . . . . . .	Number	 00000080h   
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CTRL_MASK  . . . . . . . . . . .	Number	 0000000Ch   
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+DO_NOT_SHARE . . . . . . . . . .	Number	 00000000h   
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+ENHANCED_KEY . . . . . . . . . .	Number	 00000100h   
+FALSE  . . . . . . . . . . . . .	Number	 00000000h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+FORMAT_MESSAGE_ALLOCATE_BUFFER .	Number	 00000100h   
+FORMAT_MESSAGE_FROM_SYSTEM . . .	Number	 00001000h   
+FormatMessage  . . . . . . . . .	Text   	 FormatMessageA
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineA
+HANDLE . . . . . . . . . . . . .	Text   	 DWORD
+HEAP_GENERATE_EXCEPTIONS . . . .	Number	 00000004h   
+HEAP_GROWABLE  . . . . . . . . .	Number	 00000002h   
+HEAP_NO_SERIALIZE  . . . . . . .	Number	 00000001h   
+HEAP_REALLOC_IN_PLACE_ONLY . . .	Number	 00000010h   
+HEAP_ZERO_MEMORY . . . . . . . .	Number	 00000008h   
+HelloMsg . . . . . . . . . . . .	Byte	 00000011 _DATA	
+IDABORT  . . . . . . . . . . . .	Number	 00000003h   
+IDCANCEL . . . . . . . . . . . .	Number	 00000002h   
+IDCLOSE  . . . . . . . . . . . .	Number	 00000008h   
+IDCONTINUE . . . . . . . . . . .	Number	 0000000Bh   
+IDHELP . . . . . . . . . . . . .	Number	 00000009h   
+IDIGNORE . . . . . . . . . . . .	Number	 00000005h   
+IDNO . . . . . . . . . . . . . .	Number	 00000007h   
+IDOK . . . . . . . . . . . . . .	Number	 00000001h   
+IDRETRY  . . . . . . . . . . . .	Number	 00000004h   
+IDTIMEOUT  . . . . . . . . . . .	Number	 00007D00h   
+IDTRYAGAIN . . . . . . . . . . .	Number	 0000000Ah   
+IDYES  . . . . . . . . . . . . .	Number	 00000006h   
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+KBDOWN_FLAG  . . . . . . . . . .	Number	 00000001h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
+LEFT_ALT_PRESSED . . . . . . . .	Number	 00000002h   
+LEFT_CTRL_PRESSED  . . . . . . .	Number	 00000008h   
+MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
+MB_APPLMODAL . . . . . . . . . .	Number	 00000000h   
+MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
+MB_DEFBUTTON1  . . . . . . . . .	Number	 00000000h   
+MB_DEFBUTTON2  . . . . . . . . .	Number	 00000100h   
+MB_DEFBUTTON3  . . . . . . . . .	Number	 00000200h   
+MB_DEFBUTTON4  . . . . . . . . .	Number	 00000300h   
+MB_HELP  . . . . . . . . . . . .	Number	 00004000h   
+MB_ICONASTERISK  . . . . . . . .	Number	 00000040h   
+MB_ICONERROR . . . . . . . . . .	Number	 00000010h   
+MB_ICONEXCLAMATION . . . . . . .	Number	 00000030h   
+MB_ICONHAND  . . . . . . . . . .	Number	 00000010h   
+MB_ICONINFORMATION . . . . . . .	Number	 00000040h   
+MB_ICONQUESTION  . . . . . . . .	Number	 00000020h   
+MB_ICONSTOP  . . . . . . . . . .	Number	 00000010h   
+MB_ICONWARNING . . . . . . . . .	Number	 00000030h   
+MB_OKCANCEL  . . . . . . . . . .	Number	 00000001h   
+MB_OK  . . . . . . . . . . . . .	Number	 00000000h   
+MB_RETRYCANCEL . . . . . . . . .	Number	 00000005h   
+MB_SYSTEMMODAL . . . . . . . . .	Number	 00001000h   
+MB_TASKMODAL . . . . . . . . . .	Number	 00002000h   
+MB_USERICON  . . . . . . . . . .	Number	 00000080h   
+MB_YESNOCANCEL . . . . . . . . .	Number	 00000003h   
+MB_YESNO . . . . . . . . . . . .	Number	 00000004h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+NUMLOCK_ON . . . . . . . . . . .	Number	 00000020h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+RIGHT_ALT_PRESSED  . . . . . . .	Number	 00000001h   
+RIGHT_CTRL_PRESSED . . . . . . .	Number	 00000004h   
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+ReadFromFile_1 . . . . . . . . .	DWord	 00000A13 _DATA	
+SCROLLLOCK_ON  . . . . . . . . .	Number	 00000040h   
+SHIFT_MASK . . . . . . . . . . .	Number	 00000010h   
+SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h   
+STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TAB  . . . . . . . . . . . . . .	Number	 00000009h   
+TRUE . . . . . . . . . . . . . .	Number	 00000001h   
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+VK_11  . . . . . . . . . . . . .	Number	 000000BDh   
+VK_12  . . . . . . . . . . . . .	Number	 000000BBh   
+VK_ADD . . . . . . . . . . . . .	Number	 0000006Bh   
+VK_BACK  . . . . . . . . . . . .	Number	 00000008h   
+VK_CANCEL  . . . . . . . . . . .	Number	 00000003h   
+VK_CAPITAL . . . . . . . . . . .	Number	 00000014h   
+VK_CLEAR . . . . . . . . . . . .	Number	 0000000Ch   
+VK_CONTROL . . . . . . . . . . .	Number	 00000011h   
+VK_DECIMAL . . . . . . . . . . .	Number	 0000006Eh   
+VK_DELETE  . . . . . . . . . . .	Number	 0000002Eh   
+VK_DIVIDE  . . . . . . . . . . .	Number	 0000006Fh   
+VK_DOWN  . . . . . . . . . . . .	Number	 00000028h   
+VK_END . . . . . . . . . . . . .	Number	 00000023h   
+VK_ESCAPE  . . . . . . . . . . .	Number	 0000001Bh   
+VK_EXECUTE . . . . . . . . . . .	Number	 0000002Bh   
+VK_F10 . . . . . . . . . . . . .	Number	 00000079h   
+VK_F11 . . . . . . . . . . . . .	Number	 0000007Ah   
+VK_F12 . . . . . . . . . . . . .	Number	 0000007Bh   
+VK_F13 . . . . . . . . . . . . .	Number	 0000007Ch   
+VK_F14 . . . . . . . . . . . . .	Number	 0000007Dh   
+VK_F15 . . . . . . . . . . . . .	Number	 0000007Eh   
+VK_F16 . . . . . . . . . . . . .	Number	 0000007Fh   
+VK_F17 . . . . . . . . . . . . .	Number	 00000080h   
+VK_F18 . . . . . . . . . . . . .	Number	 00000081h   
+VK_F19 . . . . . . . . . . . . .	Number	 00000082h   
+VK_F1  . . . . . . . . . . . . .	Number	 00000070h   
+VK_F20 . . . . . . . . . . . . .	Number	 00000083h   
+VK_F21 . . . . . . . . . . . . .	Number	 00000084h   
+VK_F22 . . . . . . . . . . . . .	Number	 00000085h   
+VK_F23 . . . . . . . . . . . . .	Number	 00000086h   
+VK_F24 . . . . . . . . . . . . .	Number	 00000087h   
+VK_F2  . . . . . . . . . . . . .	Number	 00000071h   
+VK_F3  . . . . . . . . . . . . .	Number	 00000072h   
+VK_F4  . . . . . . . . . . . . .	Number	 00000073h   
+VK_F5  . . . . . . . . . . . . .	Number	 00000074h   
+VK_F6  . . . . . . . . . . . . .	Number	 00000075h   
+VK_F7  . . . . . . . . . . . . .	Number	 00000076h   
+VK_F8  . . . . . . . . . . . . .	Number	 00000077h   
+VK_F9  . . . . . . . . . . . . .	Number	 00000078h   
+VK_HELP  . . . . . . . . . . . .	Number	 0000002Fh   
+VK_HOME  . . . . . . . . . . . .	Number	 00000024h   
+VK_INSERT  . . . . . . . . . . .	Number	 0000002Dh   
+VK_LBUTTON . . . . . . . . . . .	Number	 00000001h   
+VK_LCONTROL  . . . . . . . . . .	Number	 000000A2h   
+VK_LEFT  . . . . . . . . . . . .	Number	 00000025h   
+VK_LMENU . . . . . . . . . . . .	Number	 000000A4h   
+VK_LSHIFT  . . . . . . . . . . .	Number	 000000A0h   
+VK_MENU  . . . . . . . . . . . .	Number	 00000012h   
+VK_MULTIPLY  . . . . . . . . . .	Number	 0000006Ah   
+VK_NEXT  . . . . . . . . . . . .	Number	 00000022h   
+VK_NUMLOCK . . . . . . . . . . .	Number	 00000090h   
+VK_NUMPAD0 . . . . . . . . . . .	Number	 00000060h   
+VK_NUMPAD1 . . . . . . . . . . .	Number	 00000061h   
+VK_NUMPAD2 . . . . . . . . . . .	Number	 00000062h   
+VK_NUMPAD3 . . . . . . . . . . .	Number	 00000063h   
+VK_NUMPAD4 . . . . . . . . . . .	Number	 00000064h   
+VK_NUMPAD5 . . . . . . . . . . .	Number	 00000065h   
+VK_NUMPAD6 . . . . . . . . . . .	Number	 00000066h   
+VK_NUMPAD7 . . . . . . . . . . .	Number	 00000067h   
+VK_NUMPAD8 . . . . . . . . . . .	Number	 00000068h   
+VK_NUMPAD9 . . . . . . . . . . .	Number	 00000069h   
+VK_PAUSE . . . . . . . . . . . .	Number	 00000013h   
+VK_PRINT . . . . . . . . . . . .	Number	 0000002Ah   
+VK_PRIOR . . . . . . . . . . . .	Number	 00000021h   
+VK_RBUTTON . . . . . . . . . . .	Number	 00000002h   
+VK_RCONTROL  . . . . . . . . . .	Number	 000000A3h   
+VK_RETURN  . . . . . . . . . . .	Number	 0000000Dh   
+VK_RIGHT . . . . . . . . . . . .	Number	 00000027h   
+VK_RMENU . . . . . . . . . . . .	Number	 000000A5h   
+VK_RSHIFT  . . . . . . . . . . .	Number	 000000A1h   
+VK_SCROLL  . . . . . . . . . . .	Number	 00000091h   
+VK_SEPARATER . . . . . . . . . .	Number	 0000006Ch   
+VK_SHIFT . . . . . . . . . . . .	Number	 00000010h   
+VK_SNAPSHOT  . . . . . . . . . .	Number	 0000002Ch   
+VK_SPACE . . . . . . . . . . . .	Number	 00000020h   
+VK_SUBTRACT  . . . . . . . . . .	Number	 0000006Dh   
+VK_TAB . . . . . . . . . . . . .	Number	 00000009h   
+VK_UP  . . . . . . . . . . . . .	Number	 00000026h   
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+WriteToFile_1  . . . . . . . . .	DWord	 00000A0F _DATA	
+adminPassword  . . . . . . . . .	DWord	 0000022B _DATA	
+adminstudentName . . . . . . . .	Byte	 00000036 _DATA	
+authorName . . . . . . . . . . .	Byte	 00000619 _DATA	
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+bookName . . . . . . . . . . . .	Byte	 0000022F _DATA	
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+caption  . . . . . . . . . . . .	Byte	 00000004 _DATA	
+choice . . . . . . . . . . . . .	DWord	 00000000 _DATA	
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+del  . . . . . . . . . . . . . .	Byte	 00000A09 _DATA	
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+fileHandle . . . . . . . . . . .	DWord	 00000A0B _DATA	
+fileName . . . . . . . . . . . .	Byte	 00000A1F _DATA	
+getString  . . . . . . . . . . .	Byte	 0000080E _DATA	
+gray . . . . . . . . . . . . . .	Number	 00000008h   
+green  . . . . . . . . . . . . .	Number	 00000002h   
+hello  . . . . . . . . . . . . .	DWord	 00000A2B _DATA	
+lightBlue  . . . . . . . . . . .	Number	 00000009h   
+lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
+lightGray  . . . . . . . . . . .	Number	 00000007h   
+lightGreen . . . . . . . . . . .	Number	 0000000Ah   
+lightMagenta . . . . . . . . . .	Number	 0000000Dh   
+lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+space  . . . . . . . . . . . . .	Byte	 00000A03 _DATA	
+stringLength_1 . . . . . . . . .	DWord	 00000A1B _DATA	
+stringLength . . . . . . . . . .	DWord	 00000A17 _DATA	
+studentName  . . . . . . . . . .	Byte	 00000424 _DATA	
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   1 Warnings
+	   0 Errors

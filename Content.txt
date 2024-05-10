@@ -1,0 +1,3 @@
+Linear Algebra
+calculus and analytic geometry
+Programming Fundamentals Book by Kenneth Leroy Busbee

@@ -1,0 +1,3 @@
+﻿  Assembling Project.asm...
+Project.asm(219): warning A6004: procedure argument or local not referenced : var
+  CoalProject.vcxproj -> E:\Semester 3\COAL\Coal Project\CoalProject\Debug\CoalProject.exe
